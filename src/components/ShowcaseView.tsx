@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { AppTabMode } from '../types';
 import {
   GraduationCap,
   Code,
@@ -53,9 +54,26 @@ export const ShowcaseView: React.FC = () => {
     quickLoginUser,
   } = useApp();
 
-  const [authName, setAuthName] = React.useState('Prem Singh Rajput');
-  const [authEmail, setAuthEmail] = React.useState('prem.singh@student.edu');
-  const [authPassword, setAuthPassword] = React.useState('password123');
+  const handleLaunchApp = (tab?: AppTabMode) => {
+    if (!user.isLoggedIn) {
+      openAuthModal('signup');
+    } else {
+      if (tab) setActiveTab(tab);
+      setMainView('app');
+    }
+  };
+
+  const handleLaunchMobile = () => {
+    if (!user.isLoggedIn) {
+      openAuthModal('signup');
+    } else {
+      setMainView('mobile-preview');
+    }
+  };
+
+  const [authName, setAuthName] = React.useState('');
+  const [authEmail, setAuthEmail] = React.useState('');
+  const [authPassword, setAuthPassword] = React.useState('');
   const [authMessage, setAuthMessage] = React.useState<string | null>(null);
 
   const handleShowcaseSignup = (e: React.FormEvent) => {
@@ -92,19 +110,19 @@ export const ShowcaseView: React.FC = () => {
     <div className="min-h-screen bg-[#070913] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8 animate-fadeIn">
       
       {/* Top Launch Banner */}
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-purple-900/40 via-slate-900 to-indigo-900/40 border border-purple-500/30">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-violet-900/40 via-slate-900 to-indigo-900/40 border border-violet-500/30">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-5 h-5 text-purple-400 shrink-0" />
+          <Sparkles className="w-5 h-5 text-violet-400 shrink-0" />
           <span className="text-xs sm:text-sm font-semibold text-slate-200">
-            Welcome to the SaaS Product Launch Showcase! Explore interactive features below or launch the standalone app.
+            Welcome to Study Productivity OS! Sign up, log in, or continue as guest to launch your study workspace.
           </span>
         </div>
         <button
-          onClick={() => setMainView('app')}
-          className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 shrink-0 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
+          onClick={() => handleLaunchApp()}
+          className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 shrink-0 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
-          Launch Live Web App
+          Launch Full Web App
         </button>
       </div>
 
@@ -123,8 +141,8 @@ export const ShowcaseView: React.FC = () => {
               <div>
                 <h1 className="text-2xl font-black text-white tracking-tight">
                   Study <br />
-                  <span className="bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">Productivity</span> OS
-                  <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-600 text-white align-top">Lite</span>
+                  <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">Productivity</span> OS
+                  <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded bg-emerald-600 text-white align-top">Web App</span>
                 </h1>
               </div>
             </div>
@@ -274,7 +292,7 @@ export const ShowcaseView: React.FC = () => {
                 <span className="text-xs font-bold text-white">Study OS Lite</span>
               </div>
               <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                <button onClick={() => setMainView('app')} className="text-purple-400 font-bold hover:underline">
+                <button onClick={() => handleLaunchApp()} className="text-purple-400 font-bold hover:underline">
                   Open Full Screen OS ↗
                 </button>
               </div>
@@ -332,7 +350,7 @@ export const ShowcaseView: React.FC = () => {
               <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
                 <div className="flex justify-between items-center text-xs font-bold text-white">
                   <span>Today's Tasks</span>
-                  <button onClick={() => { setMainView('app'); setActiveTab('tasks'); }} className="text-purple-400 hover:underline text-[10px]">+ Add Task</button>
+                  <button onClick={() => handleLaunchApp('tasks')} className="text-purple-400 hover:underline text-[10px]">+ Add Task</button>
                 </div>
                 <div className="space-y-2 text-xs">
                   {tasks.slice(0, 4).map(t => (
@@ -391,7 +409,7 @@ export const ShowcaseView: React.FC = () => {
               <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs">
                 <div className="font-bold text-white flex justify-between">
                   <span>Today's Schedule</span>
-                  <button onClick={() => { setMainView('app'); setActiveTab('schedule'); }} className="text-purple-400 text-[10px]">View Full Schedule</button>
+                  <button onClick={() => handleLaunchApp('schedule')} className="text-purple-400 text-[10px]">View Full Schedule</button>
                 </div>
                 {schedule.slice(0, 4).map(s => (
                   <div key={s.id} className="flex justify-between items-center p-2 rounded bg-slate-850 border border-slate-800 text-[11px]">
@@ -423,7 +441,7 @@ export const ShowcaseView: React.FC = () => {
                 <span>MOBILE PREVIEW</span>
               </h2>
               <button
-                onClick={() => setMainView('mobile-preview')}
+                onClick={() => handleLaunchMobile()}
                 className="text-xs font-semibold text-purple-300 hover:text-white flex items-center gap-1"
               >
                 <span>Interactive Inspector</span>
@@ -441,7 +459,7 @@ export const ShowcaseView: React.FC = () => {
               ].map((m, i) => (
                 <div
                   key={i}
-                  onClick={() => setMainView('mobile-preview')}
+                  onClick={() => handleLaunchMobile()}
                   className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-center hover:border-purple-500/50 cursor-pointer transition-all hover:scale-105"
                 >
                   <div className="w-10 h-16 mx-auto rounded-xl bg-slate-900 border border-slate-700 p-1 flex flex-col justify-between mb-2">

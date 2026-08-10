@@ -96,11 +96,11 @@ export const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* Prototype Local Storage Note Banner */}
-      <div className="flex items-center gap-3 p-3.5 rounded-xl bg-purple-950/30 border border-purple-800/40 text-xs text-purple-200/90">
-        <ShieldCheck className="w-4 h-4 text-purple-400 shrink-0" />
+      {/* Local Storage Privacy Note Banner */}
+      <div className="flex items-center gap-3 p-3.5 rounded-xl bg-violet-950/30 border border-violet-800/40 text-xs text-violet-200/90">
+        <ShieldCheck className="w-4 h-4 text-violet-400 shrink-0" />
         <span>
-          <strong>Prototype Note:</strong> Data is stored safely in your browser using <code>localStorage</code>. No external database required.
+          <strong>Private Workspace:</strong> Your study tasks, schedules, and focus sessions are stored securely in your browser's local storage.
         </span>
       </div>
 
@@ -173,41 +173,49 @@ export const DashboardView: React.FC = () => {
             </div>
 
             <div className="space-y-2.5">
-              {tasks.slice(0, 4).map(task => (
-                <div
-                  key={task.id}
-                  onClick={() => toggleTaskComplete(task.id)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                    task.status === 'Completed'
-                      ? 'bg-slate-950/40 border-slate-800/60 opacity-60'
-                      : 'bg-slate-800/40 border-slate-700/60 hover:bg-slate-800/80 hover:border-purple-500/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <button className="text-purple-400 shrink-0">
-                      {task.status === 'Completed' ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-slate-500 hover:text-purple-400" />
-                      )}
-                    </button>
-                    <div className="truncate">
-                      <div className={`text-xs font-semibold ${task.status === 'Completed' ? 'line-through text-slate-400' : 'text-slate-100'}`}>
-                        {task.title}
-                      </div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                        <span>{task.subject}</span>
-                        <span>•</span>
-                        <span className={`font-semibold ${
-                          task.priority === 'High' ? 'text-red-400' : task.priority === 'Medium' ? 'text-amber-400' : 'text-blue-400'
-                        }`}>
-                          {task.priority}
-                        </span>
+              {tasks.length === 0 ? (
+                <div className="p-6 text-center rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-2">
+                  <BookOpen className="w-8 h-8 text-violet-400 mx-auto opacity-60" />
+                  <p className="text-xs font-semibold text-slate-300">No study tasks created yet</p>
+                  <p className="text-[11px] text-slate-500">Click "+ Add Task" to create your first task!</p>
+                </div>
+              ) : (
+                tasks.slice(0, 4).map(task => (
+                  <div
+                    key={task.id}
+                    onClick={() => toggleTaskComplete(task.id)}
+                    className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                      task.status === 'Completed'
+                        ? 'bg-slate-950/40 border-slate-800/60 opacity-60'
+                        : 'bg-slate-800/40 border-slate-700/60 hover:bg-slate-800/80 hover:border-purple-500/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <button className="text-purple-400 shrink-0">
+                        {task.status === 'Completed' ? (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-slate-500 hover:text-purple-400" />
+                        )}
+                      </button>
+                      <div className="truncate">
+                        <div className={`text-xs font-semibold ${task.status === 'Completed' ? 'line-through text-slate-400' : 'text-slate-100'}`}>
+                          {task.title}
+                        </div>
+                        <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                          <span>{task.subject}</span>
+                          <span>•</span>
+                          <span className={`font-semibold ${
+                            task.priority === 'High' ? 'text-red-400' : task.priority === 'Medium' ? 'text-amber-400' : 'text-blue-400'
+                          }`}>
+                            {task.priority}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

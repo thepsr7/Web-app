@@ -18,9 +18,9 @@ export const AuthModal: React.FC = () => {
 
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>(authModalMode);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('prem.singh@student.edu');
-  const [password, setPassword] = useState('password123');
-  const [confirmPassword, setConfirmPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [major, setMajor] = useState(MAJOR_OPTIONS[0]);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -334,36 +334,6 @@ export const AuthModal: React.FC = () => {
             )}
           </button>
         </form>
-
-        {/* Quick Demo Accounts Selection */}
-        {mode === 'login' && registeredUsers.length > 0 && (
-          <div className="space-y-2 pt-1 border-t border-slate-800">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Demo Login (1-Click)</p>
-            <div className="grid grid-cols-1 gap-1.5">
-              {registeredUsers.slice(0, 3).map(u => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => quickLoginUser(u.id)}
-                  className="p-2 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-violet-500/50 hover:bg-violet-950/20 text-left transition-all flex items-center justify-between group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-violet-600/20 text-violet-300 font-bold text-xs flex items-center justify-center border border-violet-500/20">
-                      {u.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-white group-hover:text-violet-300 transition-colors">{u.name}</p>
-                      <p className="text-[10px] text-slate-400">{u.email} • <span className="text-slate-300">{u.major || 'Student'}</span></p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] bg-slate-800 text-slate-300 group-hover:bg-violet-600 group-hover:text-white px-2 py-0.5 rounded-md font-medium transition-colors">
-                    Select
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Social / Guest Divider */}
         <div className="relative my-2 text-center">

@@ -86,7 +86,7 @@ const TIMER_PRESETS: Record<TimerMode, number> = {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Navigation & Theme
-  const [mainView, setMainView] = useState<MainViewMode>('app');
+  const [mainView, setMainView] = useState<MainViewMode>('showcase');
   const [activeTab, setActiveTab] = useState<AppTabMode>('dashboard');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => loadFromStorage(STORAGE_KEYS.THEME, true));
 
@@ -260,12 +260,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
 
       setUser(activeUser);
+      setMainView('app');
       setIsAuthModalOpen(false);
       playChime('click');
       return { success: true, message: `Welcome back, ${existingUser.name}!` };
     }
 
-    // Default fallback for demo / unregistered email
+    // Default fallback for unregistered email
     const newUser: UserProfile = {
       id: 'usr-' + Date.now(),
       name: email.split('@')[0].replace('.', ' ') || 'Student User',
@@ -278,6 +279,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setUser(newUser);
     setRegisteredUsers(prev => [...prev, newUser]);
+    setMainView('app');
     setIsAuthModalOpen(false);
     playChime('click');
     return { success: true, message: 'Account created & logged in!' };
@@ -317,6 +319,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setRegisteredUsers(prev => [newUserProfile, ...prev]);
     setUser(newUserProfile);
+    setMainView('app');
     setIsAuthModalOpen(false);
     playChime('click');
     return { success: true, message: 'Account created successfully!' };
@@ -332,6 +335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       major: 'Guest Explorer',
       role: 'Guest Session',
     });
+    setMainView('app');
     setIsAuthModalOpen(false);
     playChime('click');
   };
@@ -340,6 +344,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const target = registeredUsers.find(u => u.id === userId);
     if (target) {
       setUser({ ...target, isLoggedIn: true, isGuest: false });
+      setMainView('app');
       setIsAuthModalOpen(false);
       playChime('click');
     }
@@ -403,11 +408,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Derived Calculations
-  const focusSessionsToday = sessions.filter(s => s.type === 'Focus').length;
-  const totalStudyMinutesToday = 2 * 60 + 35 + (focusSessionsToday - 3) * 25;
-  const totalHoursToday = Math.max(0.5, totalStudyMinutesToday / 60);
+  const focusSessionsList = sessions.filter(s => s.type === 'Focus');
+  const focusSessionsTodayCount = focusSessionsList.length;
+  const totalStudyMinutesToday = focusSessionsList.reduce((sum, s) => sum + (s.durationMinutes || 25), 0);
+  const totalHoursToday = totalStudyMinutesToday / 60;
 
-  const progressPercentage = Math.min(100, Math.round((totalHoursToday / goal.targetHours) * 100));
+  const progressPercentage = goal.targetHours > 0 ? Math.min(100, Math.round((totalHoursToday / goal.targetHours) * 100)) : 0;
 
   const currentStreak = streakDays.filter(d => d.completed).length;
   const totalTasksCompleted = tasks.filter(t => t.status === 'Completed').length;
@@ -444,7 +450,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         startTimer,
         pauseTimer,
         resetTimer,
-        completedSessionsToday: focusSessionsToday,
+        completedSessionsToday: focusSessionsTodayCount,
         user,
         registeredUsers,
         login,

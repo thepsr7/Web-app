@@ -5,6 +5,22 @@ import { GraduationCap, Moon, Sun, Layout, Smartphone, Play, User, LogOut, Code,
 export const Navbar: React.FC = () => {
   const { mainView, setMainView, isDarkMode, toggleTheme, user, logout, openAuthModal } = useApp();
 
+  const handleNavigateToApp = () => {
+    if (!user.isLoggedIn) {
+      openAuthModal('signup');
+    } else {
+      setMainView('app');
+    }
+  };
+
+  const handleNavigateToMobile = () => {
+    if (!user.isLoggedIn) {
+      openAuthModal('signup');
+    } else {
+      setMainView('mobile-preview');
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#090b15]/90 backdrop-blur-md dark:border-slate-800/80 dark:bg-[#090b15]/90 light:bg-white/90 light:border-slate-200 text-slate-100 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -34,9 +50,9 @@ export const Navbar: React.FC = () => {
         {/* View Switcher Pills */}
         <div className="hidden md:flex items-center bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-100 p-1 rounded-xl border border-slate-800 dark:border-slate-800 light:border-slate-200 shadow-inner">
           <button
-            onClick={() => setMainView('app')}
+            onClick={handleNavigateToApp}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              mainView === 'app'
+              mainView === 'app' && user.isLoggedIn
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
                 : 'text-slate-400 hover:text-slate-200 dark:hover:text-slate-200 light:text-slate-600 light:hover:text-slate-900'
             }`}
@@ -48,7 +64,7 @@ export const Navbar: React.FC = () => {
           <button
             onClick={() => setMainView('showcase')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              mainView === 'showcase'
+              mainView === 'showcase' || !user.isLoggedIn
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
                 : 'text-slate-400 hover:text-slate-200 dark:hover:text-slate-200 light:text-slate-600 light:hover:text-slate-900'
             }`}
@@ -58,9 +74,9 @@ export const Navbar: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setMainView('mobile-preview')}
+            onClick={handleNavigateToMobile}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              mainView === 'mobile-preview'
+              mainView === 'mobile-preview' && user.isLoggedIn
                 ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
                 : 'text-slate-400 hover:text-slate-200 dark:hover:text-slate-200 light:text-slate-600 light:hover:text-slate-900'
             }`}
@@ -134,7 +150,7 @@ export const Navbar: React.FC = () => {
           {/* Quick Launch App Button if in showcase view */}
           {mainView === 'showcase' && (
             <button
-              onClick={() => setMainView('app')}
+              onClick={handleNavigateToApp}
               className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-purple-600/30 transition-all hover:scale-105 active:scale-95"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
@@ -149,20 +165,20 @@ export const Navbar: React.FC = () => {
       {/* Mobile view bar navigation */}
       <div className="flex md:hidden items-center justify-around bg-slate-900/90 border-t border-slate-800/60 py-2 px-4 text-xs font-medium">
         <button
-          onClick={() => setMainView('app')}
-          className={`px-3 py-1 rounded-lg ${mainView === 'app' ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
+          onClick={handleNavigateToApp}
+          className={`px-3 py-1 rounded-lg ${mainView === 'app' && user.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
         >
           Web App
         </button>
         <button
           onClick={() => setMainView('showcase')}
-          className={`px-3 py-1 rounded-lg ${mainView === 'showcase' ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
+          className={`px-3 py-1 rounded-lg ${mainView === 'showcase' || !user.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
         >
           Overview
         </button>
         <button
-          onClick={() => setMainView('mobile-preview')}
-          className={`px-3 py-1 rounded-lg ${mainView === 'mobile-preview' ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
+          onClick={handleNavigateToMobile}
+          className={`px-3 py-1 rounded-lg ${mainView === 'mobile-preview' && user.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
         >
           Mobile
         </button>
