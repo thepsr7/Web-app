@@ -57,5 +57,5 @@ export interface StreakDay {
 
 export type TimerMode = 'Focus' | 'Short Break' | 'Long Break';
 
-export type MainViewMode = 'showcase' | 'app' | 'mobile-preview';
+export type MainViewMode = 'showcase' | 'app';
 export type AppTabMode = 'dashboard' | 'tasks' | 'focus' | 'stats' | 'goals' | 'schedule' | 'settings';

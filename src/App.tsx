@@ -3,7 +3,6 @@ import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { ShowcaseView } from './components/ShowcaseView';
 import { AppLayout } from './components/app/AppLayout';
-import { MobileSimulator } from './components/MobileSimulator';
 import { AuthModal } from './components/app/AuthModal';
 
 const MainContent: React.FC = () => {
@@ -19,7 +18,6 @@ const MainContent: React.FC = () => {
       <div className="flex-1">
         {effectiveView === 'showcase' && <ShowcaseView />}
         {effectiveView === 'app' && <AppLayout />}
-        {effectiveView === 'mobile-preview' && <MobileSimulator />}
       </div>
 
       <AuthModal />

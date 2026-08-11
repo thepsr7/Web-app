@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { GraduationCap, Moon, Sun, Layout, Smartphone, Play, User, LogOut, Code, Sparkles } from 'lucide-react';
+import { GraduationCap, Moon, Sun, Layout, Play, User, LogOut, Code, Sparkles } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { mainView, setMainView, isDarkMode, toggleTheme, user, logout, openAuthModal } = useApp();
@@ -10,14 +10,6 @@ export const Navbar: React.FC = () => {
       openAuthModal('signup');
     } else {
       setMainView('app');
-    }
-  };
-
-  const handleNavigateToMobile = () => {
-    if (!user.isLoggedIn) {
-      openAuthModal('signup');
-    } else {
-      setMainView('mobile-preview');
     }
   };
 
@@ -71,18 +63,6 @@ export const Navbar: React.FC = () => {
           >
             <Sparkles className="w-3.5 h-3.5" />
             Overview
-          </button>
-
-          <button
-            onClick={handleNavigateToMobile}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              mainView === 'mobile-preview' && user.isLoggedIn
-                ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
-                : 'text-slate-400 hover:text-slate-200 dark:hover:text-slate-200 light:text-slate-600 light:hover:text-slate-900'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            Mobile View
           </button>
         </div>
 
@@ -175,12 +155,6 @@ export const Navbar: React.FC = () => {
           className={`px-3 py-1 rounded-lg ${mainView === 'showcase' || !user.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
         >
           Overview
-        </button>
-        <button
-          onClick={handleNavigateToMobile}
-          className={`px-3 py-1 rounded-lg ${mainView === 'mobile-preview' && user.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
-        >
-          Mobile
         </button>
       </div>
 

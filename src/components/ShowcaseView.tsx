@@ -63,14 +63,6 @@ export const ShowcaseView: React.FC = () => {
     }
   };
 
-  const handleLaunchMobile = () => {
-    if (!user.isLoggedIn) {
-      openAuthModal('signup');
-    } else {
-      setMainView('mobile-preview');
-    }
-  };
-
   const [authName, setAuthName] = React.useState('');
   const [authEmail, setAuthEmail] = React.useState('');
   const [authPassword, setAuthPassword] = React.useState('');
@@ -432,45 +424,6 @@ export const ShowcaseView: React.FC = () => {
               </div>
             </div>
 
-          </div>
-
-          {/* MOBILE PREVIEWS SECTION */}
-          <div className="p-6 rounded-2xl bg-slate-900/70 backdrop-blur-md border border-slate-800 shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xs font-extrabold uppercase tracking-wider text-purple-400 flex items-center gap-2">
-                <span>MOBILE PREVIEW</span>
-              </h2>
-              <button
-                onClick={() => handleLaunchMobile()}
-                className="text-xs font-semibold text-purple-300 hover:text-white flex items-center gap-1"
-              >
-                <span>Interactive Inspector</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {[
-                { name: 'Dashboard', bg: 'from-purple-900/30' },
-                { name: 'Focus Timer', bg: 'from-indigo-900/30' },
-                { name: 'Tasks', bg: 'from-slate-900' },
-                { name: 'Statistics', bg: 'from-blue-900/30' },
-                { name: 'Goals', bg: 'from-emerald-900/30' },
-              ].map((m, i) => (
-                <div
-                  key={i}
-                  onClick={() => handleLaunchMobile()}
-                  className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-center hover:border-purple-500/50 cursor-pointer transition-all hover:scale-105"
-                >
-                  <div className="w-10 h-16 mx-auto rounded-xl bg-slate-900 border border-slate-700 p-1 flex flex-col justify-between mb-2">
-                    <div className="w-4 h-0.5 bg-slate-700 rounded-full mx-auto" />
-                    <div className="w-full h-8 bg-purple-600/30 rounded" />
-                    <div className="w-2 h-2 rounded-full bg-slate-700 mx-auto" />
-                  </div>
-                  <div className="text-[11px] font-bold text-slate-200">{m.name}</div>
-                </div>
-              ))}
-            </div>
           </div>
 
         </div>
