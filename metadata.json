@@ -1,5 +1,5 @@
 {
-  "name": "Study Productivity OS Lite",
+  "name": "Student Productivity OS by PSR",
   "description": "Plan. Focus. Improve. A lightweight student productivity OS with Pomodoro timer, task management, study statistics, goals, schedules, and local storage persistence by PSR (Prem Singh Rajput).",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
