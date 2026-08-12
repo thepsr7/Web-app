@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
-:root {
+@variant dark (&:where(.dark, .dark *));
+
+:root, html.dark {
   --bg: #09090F;
+  --bg-app: #020617;
   --surface: #141726;
   --border: #2A2A40;
   --primary: #8B5CF6;
@@ -11,32 +14,114 @@
   --success: #22C55E;
   --warning: #F59E0B;
   --error: #EF4444;
+  color-scheme: dark;
+}
+
+html.light {
+  --bg: #F1F5F9;
+  --bg-app: #F8FAFC;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  --primary: #8B5CF6;
+  --secondary: #A855F7;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+  color-scheme: light;
 }
 
 body {
-  background-color: var(--bg);
+  background-color: var(--bg-app);
   color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Glass & Card Design System */
 .app-card {
-  background-color: #141726;
-  border: 1px solid #2A2A40;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 22px;
 }
 
+html.light .app-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
 .glass-card {
-  background: rgba(20, 23, 38, 0.85);
-  border: 1px solid rgba(42, 42, 64, 0.8);
+  background: var(--surface);
+  border: 1px solid var(--border);
   backdrop-filter: blur(16px);
   border-radius: 22px;
+}
+
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .purple-glow-pill {
   background: linear-gradient(135deg, #8B5CF6, #A855F7);
   box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+  color: #FFFFFF !important;
+}
+
+/* Light Theme Utility Overrides for Seamless Instant Light Mode */
+html.light .bg-\[\#020617\],
+html.light .bg-\[\#09090F\],
+html.light .bg-\[\#0D0E15\],
+html.light .bg-\[\#090b15\],
+html.light .bg-\[\#090b15\]\/90 {
+  background-color: #F8FAFC !important;
+}
+
+html.light .bg-\[\#141726\],
+html.light .bg-\[\#12131C\],
+html.light .bg-\[\#181A26\],
+html.light .bg-[#141726]\/95 {
+  background-color: #FFFFFF !important;
+}
+
+html.light .bg-\[\#1D2032\],
+html.light .bg-\[\#1A1D2E\],
+html.light .bg-slate-900,
+html.light .bg-slate-900\/90,
+html.light .bg-slate-950 {
+  background-color: #F1F5F9 !important;
+}
+
+html.light .border-\[\#2A2A40\],
+html.light .border-\[\#1F2030\],
+html.light .border-slate-800,
+html.light .border-slate-800\/80,
+html.light .border-slate-800\/60,
+html.light .border-slate-700\/60 {
+  border-color: #E2E8F0 !important;
+}
+
+html.light .text-white,
+html.light .text-slate-100,
+html.light .text-slate-200 {
+  color: #0F172A !important;
+}
+
+html.light .text-\[\#9CA3AF\],
+html.light .text-slate-400,
+html.light .text-slate-300 {
+  color: #64748B !important;
+}
+
+/* Force readable text inside primary purple buttons and badges in light mode */
+html.light .bg-\[\#8B5CF6\],
+html.light .bg-\[\#8B5CF6\] *,
+html.light .bg-violet-600,
+html.light .bg-violet-600 *,
+html.light .bg-emerald-500 *,
+html.light .bg-amber-500 * {
+  color: #FFFFFF !important;
 }
 
 @layer utilities {

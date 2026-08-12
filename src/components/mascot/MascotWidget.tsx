@@ -209,7 +209,7 @@ export const MascotWidget: React.FC = () => {
   const triggerMotivation = () => {
     if (!isMuted) playChime('click');
     setMood('happy');
-    setSpeech(`🔥 You got this, ${user.name || 'Student'}! Keep pushing! High effort yields high results!`);
+    setSpeech(`🔥 You got this, ${user?.name || 'Student'}! Keep pushing! High effort yields high results!`);
     setIsSpeechVisible(true);
   };
 

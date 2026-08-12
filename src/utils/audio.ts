@@ -120,6 +120,10 @@ export function startAmbientSound(preset: AmbientPreset, volume: number = 0.3) {
     if (!AudioContextClass) return;
 
     ambientCtx = new AudioContextClass();
+    if (ambientCtx.state === 'suspended') {
+      ambientCtx.resume().catch(() => {});
+    }
+
     ambientGainNode = ambientCtx.createGain();
     ambientGainNode.gain.setValueAtTime(volume, ambientCtx.currentTime);
     ambientGainNode.connect(ambientCtx.destination);
@@ -127,71 +131,112 @@ export function startAmbientSound(preset: AmbientPreset, volume: number = 0.3) {
     currentAmbientPreset = preset;
 
     if (preset === 'rain') {
-      // Synthesize pink noise rain
+      // Synthesize realistic soft rain using filtered brownian noise
       const bufferSize = 2 * ambientCtx.sampleRate;
       const noiseBuffer = ambientCtx.createBuffer(1, bufferSize, ambientCtx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
-      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      let lastOut = 0.0;
       for (let i = 0; i < bufferSize; i++) {
         const white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.96900 * b2 + white * 0.1538520;
-        b3 = 0.86650 * b3 + white * 0.3104856;
-        b4 = 0.55000 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.0168980;
-        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-        output[i] *= 0.11;
-        b6 = white * 0.115926;
+        output[i] = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = output[i];
+        output[i] *= 3.5;
       }
 
-      const whiteNoise = ambientCtx.createBufferSource();
-      whiteNoise.buffer = noiseBuffer;
-      whiteNoise.loop = true;
+      const noiseSource = ambientCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
 
       const filter = ambientCtx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(800, ambientCtx.currentTime);
+      filter.frequency.setValueAtTime(1200, ambientCtx.currentTime);
 
-      whiteNoise.connect(filter);
+      noiseSource.connect(filter);
       filter.connect(ambientGainNode);
-      whiteNoise.start();
-      ambientNodes.push(whiteNoise, filter);
+      noiseSource.start();
+      ambientNodes.push(noiseSource, filter);
 
-    } else if (preset === 'waves' || preset === 'lofi') {
-      // Warm chord / binaural focus drone
-      const freqs = preset === 'waves' ? [110, 220, 330, 440] : [130.81, 164.81, 196.00, 246.94]; // C chord / Cmaj7
+    } else if (preset === 'lofi') {
+      // Warm Cmaj7 / Am7 lo-fi ambient chord pad with soft lowpass filter
+      const freqs = [130.81, 164.81, 196.00, 246.94, 261.63, 329.63]; // C3, E3, G3, B3, C4, E4
       freqs.forEach((freq, idx) => {
         if (!ambientCtx || !ambientGainNode) return;
         const osc = ambientCtx.createOscillator();
         const gain = ambientCtx.createGain();
-        osc.type = preset === 'waves' ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq + (idx * 0.5), ambientCtx.currentTime);
+        const filter = ambientCtx.createBiquadFilter();
+
+        osc.type = idx % 2 === 0 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq + (idx * 0.4), ambientCtx.currentTime);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(650, ambientCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.25 / freqs.length, ambientCtx.currentTime);
         
-        gain.gain.setValueAtTime(0.08 / freqs.length, ambientCtx.currentTime);
-        osc.connect(gain);
+        osc.connect(filter);
+        filter.connect(gain);
         gain.connect(ambientGainNode);
         osc.start();
-        ambientNodes.push(osc, gain);
+        ambientNodes.push(osc, filter, gain);
       });
-    } else if (preset === 'cafe') {
-      // Soft ambient atmosphere drone
-      const osc1 = ambientCtx.createOscillator();
-      const osc2 = ambientCtx.createOscillator();
-      osc1.type = 'sine';
-      osc2.type = 'sine';
-      osc1.frequency.setValueAtTime(174, ambientCtx.currentTime); // Solfeggio 174Hz Pain/Stress relief
-      osc2.frequency.setValueAtTime(285, ambientCtx.currentTime);
-      
-      const gain1 = ambientCtx.createGain();
-      gain1.gain.setValueAtTime(0.06, ambientCtx.currentTime);
 
-      osc1.connect(gain1);
-      osc2.connect(gain1);
-      gain1.connect(ambientGainNode);
-      osc1.start();
-      osc2.start();
-      ambientNodes.push(osc1, osc2, gain1);
+    } else if (preset === 'waves') {
+      // Binaural Beta / Alpha Focus Drone (14Hz difference for cognitive focus)
+      const oscL = ambientCtx.createOscillator();
+      const oscR = ambientCtx.createOscillator();
+      const gain = ambientCtx.createGain();
+      const filter = ambientCtx.createBiquadFilter();
+
+      oscL.type = 'sine';
+      oscR.type = 'sine';
+      oscL.frequency.setValueAtTime(200, ambientCtx.currentTime);
+      oscR.frequency.setValueAtTime(214, ambientCtx.currentTime);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(500, ambientCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.3, ambientCtx.currentTime);
+
+      oscL.connect(filter);
+      oscR.connect(filter);
+      filter.connect(gain);
+      gain.connect(ambientGainNode);
+
+      oscL.start();
+      oscR.start();
+      ambientNodes.push(oscL, oscR, filter, gain);
+
+    } else if (preset === 'cafe') {
+      // Warm cozy cafe background atmosphere
+      const bufferSize = 2 * ambientCtx.sampleRate;
+      const noiseBuffer = ambientCtx.createBuffer(1, bufferSize, ambientCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99 * b0 + white * 0.05;
+        b1 = 0.95 * b1 + white * 0.1;
+        output[i] = (b0 + b1) * 0.4;
+      }
+
+      const noiseSource = ambientCtx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+
+      const filter = ambientCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(450, ambientCtx.currentTime);
+      filter.Q.setValueAtTime(1.2, ambientCtx.currentTime);
+
+      const gain = ambientCtx.createGain();
+      gain.gain.setValueAtTime(0.35, ambientCtx.currentTime);
+
+      noiseSource.connect(filter);
+      filter.connect(gain);
+      gain.connect(ambientGainNode);
+
+      noiseSource.start();
+      ambientNodes.push(noiseSource, filter, gain);
     }
   } catch (err) {
     console.warn('Error starting ambient sound:', err);
@@ -200,6 +245,9 @@ export function startAmbientSound(preset: AmbientPreset, volume: number = 0.3) {
 
 export function setAmbientVolume(volume: number) {
   if (ambientGainNode && ambientCtx) {
+    if (ambientCtx.state === 'suspended') {
+      ambientCtx.resume().catch(() => {});
+    }
     ambientGainNode.gain.setValueAtTime(Math.max(0, Math.min(1, volume)), ambientCtx.currentTime);
   }
 }

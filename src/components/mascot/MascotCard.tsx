@@ -19,7 +19,7 @@ export const MascotCard: React.FC = () => {
     if (totalStudyMinutesToday > 0) {
       return `Great job studying ${totalStudyMinutesToday} minutes today! Let's keep that streak going! 🔥`;
     }
-    return `Welcome back, ${user.name || 'Student'}! Ready to smash your study targets today?`;
+    return `Welcome back, ${user?.name || 'Student'}! Ready to smash your study targets today?`;
   });
 
   const currentSkinInfo = MASCOT_SKINS[skin] || MASCOT_SKINS['mochi-owl'];

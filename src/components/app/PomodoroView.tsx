@@ -35,16 +35,21 @@ export const PomodoroView: React.FC = () => {
   const [ambientPreset, setAmbientPreset] = useState<AmbientPreset>('none');
   const [volume, setVolume] = useState<number>(0.3);
 
+  // Sync volume or stop ambient sound when component unmounts
   useEffect(() => {
-    if (isTimerRunning && ambientPreset !== 'none') {
-      startAmbientSound(ambientPreset, volume);
-    } else {
-      stopAmbientSound();
-    }
     return () => {
       stopAmbientSound();
     };
-  }, [isTimerRunning, ambientPreset]);
+  }, []);
+
+  const handleSelectPreset = (pId: AmbientPreset) => {
+    setAmbientPreset(pId);
+    if (pId === 'none') {
+      stopAmbientSound();
+    } else {
+      startAmbientSound(pId, volume);
+    }
+  };
 
   const handleVolumeChange = (newVol: number) => {
     setVolume(newVol);
@@ -211,6 +216,12 @@ export const PomodoroView: React.FC = () => {
           <div className="flex items-center gap-2 text-xs font-extrabold text-white">
             <Headphones className="w-4 h-4 text-[#8B5CF6]" />
             <span>Ambient Study Sounds</span>
+            {ambientPreset !== 'none' && (
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 text-[#8B5CF6] text-[10px] font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] animate-pulse" />
+                Playing
+              </span>
+            )}
           </div>
           {ambientPreset !== 'none' && (
             <div className="flex items-center gap-2">
@@ -238,7 +249,7 @@ export const PomodoroView: React.FC = () => {
           ].map(p => (
             <button
               key={p.id}
-              onClick={() => setAmbientPreset(p.id as AmbientPreset)}
+              onClick={() => handleSelectPreset(p.id as AmbientPreset)}
               className={`p-2.5 rounded-xl border font-bold text-center transition-all text-[11px] ${
                 ambientPreset === p.id
                   ? 'bg-[#8B5CF6] text-white border-[#8B5CF6] shadow-md shadow-[#8B5CF6]/30'

@@ -56,7 +56,7 @@ export const ShowcaseView: React.FC = () => {
   } = useApp();
 
   const handleLaunchApp = (tab?: AppTabMode) => {
-    if (!user.isLoggedIn) {
+    if (!user?.isLoggedIn) {
       openAuthModal('signup');
     } else {
       if (tab) setActiveTab(tab);
@@ -295,7 +295,7 @@ export const ShowcaseView: React.FC = () => {
             <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex justify-between items-center">
               <div>
                 <h3 className="text-base font-bold text-white">
-                  Good evening, <span className="text-purple-300">{user.name}!</span> 👋
+                  Good evening, <span className="text-purple-300">{user?.name || 'Student'}!</span> 👋
                 </h3>
                 <p className="text-xs text-slate-400">Let's make today productive.</p>
               </div>

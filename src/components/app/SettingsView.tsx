@@ -41,20 +41,21 @@ export const SettingsView: React.FC = () => {
     goal,
     updateGoal,
     preferences,
-    updatePreferences
+    updatePreferences,
+    isDarkMode
   } = useApp();
 
   // Profile Edit Modal State
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [profileName, setProfileName] = useState(user.name);
-  const [profileEmail, setProfileEmail] = useState(user.email);
-  const [profileMajor, setProfileMajor] = useState(user.major || '');
+  const [profileName, setProfileName] = useState(user?.name || '');
+  const [profileEmail, setProfileEmail] = useState(user?.email || '');
+  const [profileMajor, setProfileMajor] = useState(user?.major || '');
   const [profileSavedMessage, setProfileSavedMessage] = useState('');
 
   // Daily Goal Target state
-  const [targetHours, setTargetHours] = useState<number>(goal.targetHours);
-  const [targetTasks, setTargetTasks] = useState<number>(goal.targetTasks);
-  const [targetSessions, setTargetSessions] = useState<number>(goal.targetSessions);
+  const [targetHours, setTargetHours] = useState<number>(goal?.targetHours ?? 3);
+  const [targetTasks, setTargetTasks] = useState<number>(goal?.targetTasks ?? 5);
+  const [targetSessions, setTargetSessions] = useState<number>(goal?.targetSessions ?? 4);
   const [isGoalSaved, setIsGoalSaved] = useState(false);
 
   // Accordion Expand States for More section
@@ -129,7 +130,7 @@ export const SettingsView: React.FC = () => {
       {/* User Profile Card */}
       <div
         onClick={() => {
-          if (user.isLoggedIn && !user.isGuest) {
+          if (user?.isLoggedIn && !user?.isGuest) {
             setProfileName(user.name);
             setProfileEmail(user.email);
             setProfileMajor(user.major || '');
@@ -142,19 +143,19 @@ export const SettingsView: React.FC = () => {
       >
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#8B5CF6] to-[#A855F7] p-0.5 shrink-0 flex items-center justify-center text-white font-black text-lg shadow-md shadow-[#8B5CF6]/20">
-            {user.name ? user.name.charAt(0).toUpperCase() : 'G'}
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'G'}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-extrabold text-white group-hover:text-[#8B5CF6] transition-colors">
-                {user.isLoggedIn && !user.isGuest ? user.name : 'Guest Student'}
+                {user?.isLoggedIn && !user?.isGuest ? user.name : 'Guest Student'}
               </h3>
-              {user.isLoggedIn && !user.isGuest && (
+              {user?.isLoggedIn && !user?.isGuest && (
                 <Edit2 className="w-3.5 h-3.5 text-[#8B5CF6] opacity-0 group-hover:opacity-100 transition-opacity" />
               )}
             </div>
             <p className="text-xs text-[#9CA3AF] mt-0.5">
-              {user.isLoggedIn && !user.isGuest
+              {user?.isLoggedIn && !user?.isGuest
                 ? user.email + (user.major ? ` • ${user.major}` : '')
                 : 'Click to log in and sync your account'}
             </p>
@@ -523,11 +524,16 @@ export const SettingsView: React.FC = () => {
             onClick={() => {
               updatePreferences(prev => ({ ...prev, theme: 'light' }));
             }}
-            className="p-3.5 rounded-2xl hover:bg-[#2A2A40]/30 flex items-center justify-between cursor-pointer transition-all"
+            className={`p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
+              preferences.theme === 'light' ? 'bg-[#8B5CF6]/15 border border-[#8B5CF6]/40' : 'hover:bg-[#2A2A40]/30'
+            }`}
           >
             <div className="flex items-center gap-3.5 text-xs font-extrabold text-white">
-              <Sun className="w-5 h-5 text-[#9CA3AF]" />
-              <span>Light</span>
+              <Sun className={`w-5 h-5 ${preferences.theme === 'light' ? 'text-amber-400' : 'text-[#9CA3AF]'}`} />
+              <div>
+                <div>Light Theme</div>
+                <div className="text-[10px] text-[#9CA3AF] font-normal">Clean high-contrast light layout</div>
+              </div>
             </div>
             
             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -542,11 +548,16 @@ export const SettingsView: React.FC = () => {
             onClick={() => {
               updatePreferences(prev => ({ ...prev, theme: 'dark' }));
             }}
-            className="p-3.5 rounded-2xl hover:bg-[#2A2A40]/30 flex items-center justify-between cursor-pointer transition-all"
+            className={`p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
+              preferences.theme === 'dark' ? 'bg-[#8B5CF6]/15 border border-[#8B5CF6]/40' : 'hover:bg-[#2A2A40]/30'
+            }`}
           >
-            <div className="flex items-center gap-3.5 text-xs font-extrabold text-[#8B5CF6]">
-              <Moon className="w-5 h-5 text-[#8B5CF6]" />
-              <span>Dark</span>
+            <div className="flex items-center gap-3.5 text-xs font-extrabold text-white">
+              <Moon className={`w-5 h-5 ${preferences.theme === 'dark' ? 'text-[#8B5CF6]' : 'text-[#9CA3AF]'}`} />
+              <div>
+                <div>Dark Theme</div>
+                <div className="text-[10px] text-[#9CA3AF] font-normal">Deep dark focus environment</div>
+              </div>
             </div>
             
             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -561,11 +572,16 @@ export const SettingsView: React.FC = () => {
             onClick={() => {
               updatePreferences(prev => ({ ...prev, theme: 'system' }));
             }}
-            className="p-3.5 rounded-2xl hover:bg-[#2A2A40]/30 flex items-center justify-between cursor-pointer transition-all"
+            className={`p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
+              preferences.theme === 'system' ? 'bg-[#8B5CF6]/15 border border-[#8B5CF6]/40' : 'hover:bg-[#2A2A40]/30'
+            }`}
           >
             <div className="flex items-center gap-3.5 text-xs font-extrabold text-white">
-              <Monitor className="w-5 h-5 text-[#9CA3AF]" />
-              <span>System Default</span>
+              <Monitor className={`w-5 h-5 ${preferences.theme === 'system' ? 'text-cyan-400' : 'text-[#9CA3AF]'}`} />
+              <div>
+                <div>System Default</div>
+                <div className="text-[10px] text-[#9CA3AF] font-normal">Sync automatically with OS settings ({isDarkMode ? 'Dark' : 'Light'})</div>
+              </div>
             </div>
             
             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -578,7 +594,36 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* SOUND & HAPTICS - Matching Screenshot */}
+      {/* STUDY COMPANION MASCOT TOGGLE */}
+      <div className="space-y-2.5">
+        <h3 className="text-xs font-extrabold text-[#9CA3AF] uppercase tracking-wider px-1">
+          STUDY COMPANION
+        </h3>
+
+        <div className="p-4 sm:p-5 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-4 shadow-md">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-2xl bg-[#8B5CF6]/15 text-[#8B5CF6]">
+                <Sparkles className="w-5 h-5 text-[#8B5CF6]" />
+              </div>
+              <div>
+                <h4 className="text-xs font-extrabold text-white">Enable Mascot Companion</h4>
+                <p className="text-[11px] text-[#9CA3AF] mt-0.5">Show Mochi the Owl interactive mascot on screen for motivation and tips.</p>
+              </div>
+            </div>
+
+            <ToggleSwitch
+              checked={preferences.showMascot !== false}
+              onChange={val => {
+                updatePreferences(prev => ({
+                  ...prev,
+                  showMascot: val
+                }));
+              }}
+            />
+          </div>
+        </div>
+      </div>
       <div className="space-y-2.5">
         <h3 className="text-xs font-extrabold text-[#9CA3AF] uppercase tracking-wider px-1">
           SOUND & HAPTICS
@@ -946,7 +991,7 @@ export const SettingsView: React.FC = () => {
           <span>Reset App Data to Zero</span>
         </button>
 
-        {user.isLoggedIn && !user.isGuest && (
+        {user?.isLoggedIn && !user?.isGuest && (
           <button
             onClick={logout}
             className="w-full p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] hover:border-[#8B5CF6]/50 text-[#9CA3AF] hover:text-white font-extrabold text-xs flex items-center justify-center gap-2.5 transition-all shadow-md"

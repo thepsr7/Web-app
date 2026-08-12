@@ -89,4 +89,5 @@ export interface UserPreferences {
   notifications: NotificationPreferences;
   theme: ThemeOption;
   soundHaptics: SoundHapticsPreferences;
+  showMascot: boolean;
 }

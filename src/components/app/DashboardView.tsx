@@ -115,7 +115,7 @@ export const DashboardView: React.FC = () => {
           </button>
           
           <div className="w-9 h-9 rounded-2xl bg-[#8B5CF6] text-white font-black text-xs flex items-center justify-center shadow-md shadow-[#8B5CF6]/30">
-            {user.name ? user.name.slice(0, 3).toUpperCase() : 'GOO'}
+            {user?.name ? user.name.slice(0, 3).toUpperCase() : 'GOO'}
           </div>
         </div>
       </div>

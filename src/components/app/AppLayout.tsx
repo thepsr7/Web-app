@@ -11,7 +11,7 @@ import { MascotWidget } from '../mascot/MascotWidget';
 import { AppTabMode } from '../../types';
 
 export const AppLayout: React.FC = () => {
-  const { activeTab, setActiveTab, user, resetAllData } = useApp();
+  const { activeTab, setActiveTab, user, resetAllData, preferences } = useApp();
 
   const navItems = [
     { id: 'dashboard', label: 'Home', icon: <Home className="w-5 h-5" /> },
@@ -77,11 +77,11 @@ export const AppLayout: React.FC = () => {
 
           <div className="p-3 rounded-2xl bg-[#09090F] border border-[#2A2A40] flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B5CF6] to-[#A855F7] text-white font-black flex items-center justify-center text-xs shrink-0">
-              {user.name ? user.name.charAt(0).toUpperCase() : 'G'}
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'G'}
             </div>
             <div className="truncate min-w-0">
-              <div className="text-xs font-extrabold text-white truncate">{user.name || 'Guest User'}</div>
-              <div className="text-[10px] text-[#9CA3AF] truncate">{user.email || 'Sign in to sync'}</div>
+              <div className="text-xs font-extrabold text-white truncate">{user?.name || 'Guest User'}</div>
+              <div className="text-[10px] text-[#9CA3AF] truncate">{user?.email || 'Sign in to sync'}</div>
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@ export const AppLayout: React.FC = () => {
       <AddTaskModal />
 
       {/* Interactive Mochi Owl Mascot */}
-      <MascotWidget />
+      {preferences?.showMascot !== false && <MascotWidget />}
 
     </div>
   );

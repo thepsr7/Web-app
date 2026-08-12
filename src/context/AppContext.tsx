@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Task, PomodoroSession, ScheduleItem, DailyGoal, UserProfile, StreakDay, MainViewMode, AppTabMode, TimerMode, UserPreferences } from '../types';
+import { Task, PomodoroSession, ScheduleItem, DailyGoal, UserProfile, StreakDay, MainViewMode, AppTabMode, TimerMode, UserPreferences, ThemeOption } from '../types';
 import { loadFromStorage, saveToStorage, STORAGE_KEYS, INITIAL_TASKS, INITIAL_SCHEDULE, INITIAL_GOAL, INITIAL_USER, INITIAL_STREAK, INITIAL_SESSIONS, INITIAL_USERS, INITIAL_PREFERENCES } from '../utils/storage';
 import { playChime, setAudioPreferences, stopAmbientSound } from '../utils/audio';
 
@@ -93,8 +93,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeTab, setActiveTab] = useState<AppTabMode>('dashboard');
   const [preferences, setPreferences] = useState<UserPreferences>(() => loadFromStorage(STORAGE_KEYS.PREFERENCES, INITIAL_PREFERENCES));
 
-  // Legacy Theme state synced with preferences
-  const isDarkMode = preferences.theme === 'dark' || (preferences.theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  // System color scheme detection state
+  const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return true;
+  });
+
+  // Reactive listener for OS theme preference changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemPrefersDark(e.matches);
+    };
+
+    try {
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange);
+      } else {
+        mediaQuery.addListener(handleChange);
+      }
+    } catch {
+      // Ignore fallback
+    }
+
+    return () => {
+      try {
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener('change', handleChange);
+        } else {
+          mediaQuery.removeListener(handleChange);
+        }
+      } catch {
+        // Ignore fallback
+      }
+    };
+  }, []);
+
+  // Theme resolution: 'dark' | 'light' | 'system'
+  const isDarkMode = preferences.theme === 'dark' || (preferences.theme === 'system' && systemPrefersDark);
 
   // Data States
   const [tasks, setTasks] = useState<Task[]>(() => loadFromStorage(STORAGE_KEYS.TASKS, INITIAL_TASKS));
@@ -268,10 +307,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Actions
   const toggleTheme = () => {
-    updatePreferences(prev => ({
-      ...prev,
-      theme: prev.theme === 'dark' ? 'light' : 'dark'
-    }));
+    updatePreferences(prev => {
+      let nextTheme: ThemeOption = 'dark';
+      if (prev.theme === 'dark') nextTheme = 'light';
+      else if (prev.theme === 'light') nextTheme = 'system';
+      else nextTheme = 'dark';
+      return { ...prev, theme: nextTheme };
+    });
   };
 
   const setTimerMode = (mode: TimerMode) => {

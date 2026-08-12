@@ -1,9 +1,9 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { GraduationCap, Moon, Sun, Layout, Play, User, LogOut, Code, Sparkles } from 'lucide-react';
+import { GraduationCap, Moon, Sun, Monitor, Layout, Play, User, LogOut, Code, Sparkles } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
-  const { mainView, setMainView, isDarkMode, toggleTheme, user, logout, openAuthModal } = useApp();
+  const { mainView, setMainView, preferences, toggleTheme, user, logout, openAuthModal } = useApp();
 
   const handleNavigateToApp = () => {
     if (!user.isLoggedIn) {
@@ -75,17 +75,22 @@ export const Navbar: React.FC = () => {
             <span>PSR (Prem Singh Rajput)</span>
           </div>
 
-          {/* Theme Toggle */}
+          {/* Theme Toggle Button (Dark / Light / System) */}
           <button
             onClick={toggleTheme}
-            title="Toggle Light/Dark Theme"
-            className="p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 dark:bg-slate-800/60 dark:border-slate-700/60 light:bg-slate-100 light:border-slate-300 light:text-slate-800 text-slate-300 transition-all hover:scale-105 active:scale-95"
+            title={`Current Theme: ${preferences?.theme ? preferences.theme.toUpperCase() : 'DARK'} (Click to cycle)`}
+            className="p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer"
           >
-            {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-purple-600" />}
+            {preferences?.theme === 'light' && <Sun className="w-4 h-4 text-amber-400" />}
+            {preferences?.theme === 'dark' && <Moon className="w-4 h-4 text-purple-400" />}
+            {preferences?.theme === 'system' && <Monitor className="w-4 h-4 text-cyan-400" />}
+            <span className="text-[10px] font-bold tracking-wider uppercase text-slate-300 hidden sm:inline">
+              {preferences?.theme || 'dark'}
+            </span>
           </button>
 
           {/* Auth State Buttons */}
-          {user.isLoggedIn ? (
+          {user?.isLoggedIn ? (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => openAuthModal('login')}
@@ -93,10 +98,10 @@ export const Navbar: React.FC = () => {
                 title="Account Settings"
               >
                 <div className="w-5 h-5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">
-                  {user.name.charAt(0)}
+                  {user.name ? user.name.charAt(0) : 'U'}
                 </div>
                 <div className="text-left hidden sm:block">
-                  <p className="font-semibold text-white max-w-[100px] truncate leading-none">{user.name}</p>
+                  <p className="font-semibold text-white max-w-[100px] truncate leading-none">{user.name || 'User'}</p>
                   <p className="text-[9px] text-slate-400 leading-none mt-0.5">{user.isGuest ? 'Guest' : user.major || 'Student'}</p>
                 </div>
               </button>
@@ -146,13 +151,13 @@ export const Navbar: React.FC = () => {
       <div className="flex md:hidden items-center justify-around bg-slate-900/90 border-t border-slate-800/60 py-2 px-4 text-xs font-medium">
         <button
           onClick={handleNavigateToApp}
-          className={`px-3 py-1 rounded-lg ${mainView === 'app' && user.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
+          className={`px-3 py-1 rounded-lg ${mainView === 'app' && user?.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
         >
           Web App
         </button>
         <button
           onClick={() => setMainView('showcase')}
-          className={`px-3 py-1 rounded-lg ${mainView === 'showcase' || !user.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
+          className={`px-3 py-1 rounded-lg ${mainView === 'showcase' || !user?.isLoggedIn ? 'bg-violet-600 text-white font-bold' : 'text-slate-400'}`}
         >
           Overview
         </button>

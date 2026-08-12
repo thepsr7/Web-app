@@ -65,13 +65,27 @@ export const INITIAL_PREFERENCES: UserPreferences = {
     sessionEndSound: true,
     hapticFeedback: true,
   },
+  showMascot: true,
 };
 
 // Helper functions for reading & saving to localStorage
 export function loadFromStorage<T>(key: string, fallback: T): T {
   try {
     const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : fallback;
+    if (!item) return fallback;
+    const parsed = JSON.parse(item);
+    if (parsed && typeof parsed === 'object' && typeof fallback === 'object' && !Array.isArray(fallback)) {
+      const merged: Record<string, any> = { ...fallback, ...parsed };
+      for (const k of Object.keys(fallback as Record<string, any>)) {
+        const fbVal = (fallback as Record<string, any>)[k];
+        const prsVal = (parsed as Record<string, any>)[k];
+        if (fbVal && typeof fbVal === 'object' && fbVal !== null && !Array.isArray(fbVal)) {
+          merged[k] = { ...fbVal, ...(prsVal && typeof prsVal === 'object' ? prsVal : {}) };
+        }
+      }
+      return merged as T;
+    }
+    return parsed ?? fallback;
   } catch (e) {
     console.warn(`Error loading key ${key} from storage:`, e);
     return fallback;
