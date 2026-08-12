@@ -1,7 +1,8 @@
 import { NoteItem } from '../types';
 import { INITIAL_NOTES } from '../data/initialNotes';
 
-const NOTES_STORAGE_KEY = 'study_os_zero_notes_items';
+const NOTES_STORAGE_KEY = 'study_os_user_clean_notes';
+const OLD_NOTES_STORAGE_KEY = 'study_os_zero_notes_items';
 const IDB_NAME = 'StudyOS_NotesDB';
 const IDB_STORE = 'file_blobs';
 const IDB_VERSION = 1;
@@ -76,16 +77,17 @@ export async function deleteFileBlobFromIDB(blobId: string): Promise<void> {
 // LocalStorage helpers for Notes metadata
 export function loadNotesFromStorage(): NoteItem[] {
   try {
+    localStorage.removeItem(OLD_NOTES_STORAGE_KEY);
     const saved = localStorage.getItem(NOTES_STORAGE_KEY);
-    if (!saved) return INITIAL_NOTES;
+    if (!saved) return [];
     const parsed = JSON.parse(saved);
-    if (Array.isArray(parsed) && parsed.length > 0) {
+    if (Array.isArray(parsed)) {
       return parsed;
     }
-    return INITIAL_NOTES;
+    return [];
   } catch (e) {
     console.warn('Error reading notes from storage:', e);
-    return INITIAL_NOTES;
+    return [];
   }
 }
 
