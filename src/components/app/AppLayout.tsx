@@ -1,56 +1,56 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { LayoutDashboard, CheckSquare, Clock, BarChart2, Target, Calendar, User, LogOut, GraduationCap, RotateCcw } from 'lucide-react';
+import { Home, CheckSquare, Clock, BarChart2, Settings, GraduationCap, RotateCcw } from 'lucide-react';
 import { DashboardView } from './DashboardView';
 import { TaskManagementView } from './TaskManagementView';
 import { PomodoroView } from './PomodoroView';
 import { StatisticsView } from './StatisticsView';
-import { GoalsView } from './GoalsView';
-import { ScheduleView } from './ScheduleView';
+import { SettingsView } from './SettingsView';
+import { AddTaskModal } from './AddTaskModal';
+import { MascotWidget } from '../mascot/MascotWidget';
 import { AppTabMode } from '../../types';
 
 export const AppLayout: React.FC = () => {
-  const { activeTab, setActiveTab, user, logout, openAuthModal, resetAllData } = useApp();
+  const { activeTab, setActiveTab, user, resetAllData } = useApp();
 
-  const navItems: { id: AppTabMode; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { id: 'tasks', label: 'Tasks', icon: <CheckSquare className="w-4 h-4" /> },
-    { id: 'focus', label: 'Focus Timer', icon: <Clock className="w-4 h-4" /> },
-    { id: 'stats', label: 'Statistics', icon: <BarChart2 className="w-4 h-4" /> },
-    { id: 'goals', label: 'Goals', icon: <Target className="w-4 h-4" /> },
-    { id: 'schedule', label: 'Schedule', icon: <Calendar className="w-4 h-4" /> },
+  const navItems = [
+    { id: 'dashboard', label: 'Home', icon: <Home className="w-5 h-5" /> },
+    { id: 'tasks', label: 'Tasks', icon: <CheckSquare className="w-5 h-5" /> },
+    { id: 'focus', label: 'Focus', icon: <Clock className="w-5 h-5" /> },
+    { id: 'stats', label: 'Progress', icon: <BarChart2 className="w-5 h-5" /> },
+    { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
-    <div className="min-h-screen bg-[#070913] text-slate-100 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#09090F] text-white flex flex-col md:flex-row relative font-sans selection:bg-[#8B5CF6] selection:text-white">
       
       {/* Sidebar Navigation for Desktop */}
-      <aside className="w-full md:w-64 border-r border-slate-800/80 bg-[#090b16] p-4 flex flex-col justify-between shrink-0">
+      <aside className="hidden md:flex w-64 border-r border-[#2A2A40] bg-[#141726] p-5 flex-col justify-between shrink-0">
         <div className="space-y-6">
           
           {/* Logo Badge */}
-          <div className="flex items-center gap-3 px-2 py-1">
-            <div className="w-9 h-9 rounded-xl bg-violet-600 flex items-center justify-center text-white font-bold shadow-lg shadow-violet-600/30">
-              <GraduationCap className="w-5 h-5" />
+          <div className="flex items-center gap-3 px-1 py-1">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#8B5CF6] to-[#A855F7] flex items-center justify-center text-white font-black shadow-lg shadow-[#8B5CF6]/30">
+              <GraduationCap className="w-6 h-6" />
             </div>
             <div>
-              <div className="font-extrabold text-sm text-white">Study OS</div>
-              <div className="text-[10px] text-violet-400 font-medium">Student Productivity App</div>
+              <div className="font-extrabold text-sm text-white tracking-tight">Study OS</div>
+              <div className="text-[10px] text-[#8B5CF6] font-bold">Productivity Suite</div>
             </div>
           </div>
 
           {/* Nav Items */}
-          <nav className="space-y-1">
+          <nav className="space-y-1.5">
             {navItems.map(item => {
-              const isActive = activeTab === item.id;
+              const isActive = activeTab === item.id || (item.id === 'settings' && activeTab === 'goals');
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-xs transition-all ${
+                  onClick={() => setActiveTab(item.id as AppTabMode)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs transition-all ${
                     isActive
-                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+                      ? 'bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] text-white shadow-lg shadow-[#8B5CF6]/30'
+                      : 'text-[#9CA3AF] hover:text-white hover:bg-[#2A2A40]/50'
                   }`}
                 >
                   {item.icon}
@@ -61,61 +61,71 @@ export const AppLayout: React.FC = () => {
           </nav>
         </div>
 
-        {/* User Card & Reset Data */}
-        <div className="pt-4 border-t border-slate-800/80 space-y-3">
+        {/* User Card & Data Reset */}
+        <div className="pt-4 border-t border-[#2A2A40] space-y-3">
           <button
             onClick={() => {
-              if (window.confirm('Reset workspace tasks, schedule, and study timer logs to defaults?')) {
+              if (window.confirm('Reset all app statistics, tasks, and timer records to zero?')) {
                 resetAllData();
               }
             }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/40 hover:bg-slate-800 text-slate-400 text-[11px] font-medium border border-slate-800 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#09090F] hover:bg-[#2A2A40] text-[#9CA3AF] text-[11px] font-bold border border-[#2A2A40] transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset App Data</span>
+            <span>Reset App Data to 0</span>
           </button>
 
-          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold flex items-center justify-center text-xs shrink-0">
-                {user.name ? user.name.charAt(0) : 'P'}
-              </div>
-              <div className="truncate">
-                <div className="text-xs font-semibold text-white truncate">{user.name}</div>
-                <div className="text-[10px] text-slate-400 truncate">{user.email || 'Student'}</div>
-              </div>
+          <div className="p-3 rounded-2xl bg-[#09090F] border border-[#2A2A40] flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B5CF6] to-[#A855F7] text-white font-black flex items-center justify-center text-xs shrink-0">
+              {user.name ? user.name.charAt(0).toUpperCase() : 'G'}
             </div>
-
-            {user.isLoggedIn ? (
-              <button
-                onClick={logout}
-                title="Logout"
-                className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={() => openAuthModal('login')}
-                className="p-1.5 text-purple-400 hover:text-purple-300 transition-colors"
-              >
-                <User className="w-4 h-4" />
-              </button>
-            )}
+            <div className="truncate min-w-0">
+              <div className="text-xs font-extrabold text-white truncate">{user.name || 'Guest User'}</div>
+              <div className="text-[10px] text-[#9CA3AF] truncate">{user.email || 'Sign in to sync'}</div>
+            </div>
           </div>
         </div>
 
       </aside>
 
       {/* Main Workspace View */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto pb-28">
         {activeTab === 'dashboard' && <DashboardView />}
         {activeTab === 'tasks' && <TaskManagementView />}
         {activeTab === 'focus' && <PomodoroView />}
         {activeTab === 'stats' && <StatisticsView />}
-        {activeTab === 'goals' && <GoalsView />}
-        {activeTab === 'schedule' && <ScheduleView />}
+        {(activeTab === 'settings' || activeTab === 'goals') && <SettingsView />}
       </main>
+
+      {/* Bottom Navigation Bar for Mobile matching screenshot */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#141726]/95 backdrop-blur-xl border-t border-[#2A2A40] px-3 py-2 flex items-center justify-around shadow-2xl">
+        {navItems.map(item => {
+          const isActive = activeTab === item.id || (item.id === 'settings' && activeTab === 'goals');
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as AppTabMode)}
+              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-2xl transition-all relative ${
+                isActive
+                  ? 'text-[#8B5CF6] font-black'
+                  : 'text-[#9CA3AF] hover:text-white'
+              }`}
+            >
+              {isActive && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 w-7 h-1 bg-[#8B5CF6] rounded-full shadow-[0_0_10px_#8B5CF6]" />
+              )}
+              {item.icon}
+              <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Add Task Modal */}
+      <AddTaskModal />
+
+      {/* Interactive Mochi Owl Mascot */}
+      <MascotWidget />
 
     </div>
   );

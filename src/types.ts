@@ -30,7 +30,7 @@ export interface ScheduleItem {
 }
 
 export interface DailyGoal {
-  targetHours: number; // e.g. 3.5 for 3h 30m
+  targetHours: number; // e.g. 3.0
   targetTasks: number;
   targetSessions: number;
 }
@@ -59,3 +59,34 @@ export type TimerMode = 'Focus' | 'Short Break' | 'Long Break';
 
 export type MainViewMode = 'showcase' | 'app';
 export type AppTabMode = 'dashboard' | 'tasks' | 'focus' | 'stats' | 'goals' | 'schedule' | 'settings';
+
+// Preferences Interfaces matching user request screenshot
+export interface FocusPreferences {
+  defaultFocusDuration: number; // in minutes (e.g., 25)
+  shortBreakDuration: number; // in minutes (e.g., 5)
+  longBreakDuration: number; // in minutes (e.g., 15)
+  sessionsBeforeLongBreak: number; // e.g., 4
+  autoStartNextSession: boolean;
+}
+
+export interface NotificationPreferences {
+  focusReminders: boolean;
+  breakAlerts: boolean;
+  dailyGoalReminder: boolean;
+  motivationalQuotes: boolean;
+}
+
+export type ThemeOption = 'light' | 'dark' | 'system';
+
+export interface SoundHapticsPreferences {
+  sessionStartSound: boolean;
+  sessionEndSound: boolean;
+  hapticFeedback: boolean;
+}
+
+export interface UserPreferences {
+  focus: FocusPreferences;
+  notifications: NotificationPreferences;
+  theme: ThemeOption;
+  soundHaptics: SoundHapticsPreferences;
+}

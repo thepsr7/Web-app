@@ -25,7 +25,8 @@ import {
   Sparkles,
   Check,
   Circle,
-  Database
+  Database,
+  TrendingUp
 } from 'lucide-react';
 
 export const ShowcaseView: React.FC = () => {
@@ -300,39 +301,77 @@ export const ShowcaseView: React.FC = () => {
               </div>
             </div>
 
-            {/* 4 Summary Pills */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-purple-400 shrink-0" />
+            {/* Overview 4 Stat Cards matching screenshot */}
+            <div className="grid grid-cols-2 gap-3">
+              
+              {/* 1. Study Streak */}
+              <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden shadow-md">
+                <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+                  <Flame className="w-4 h-4 text-[#8B5CF6]" />
+                  <span>Study Streak</span>
+                </div>
                 <div>
-                  <div className="text-lg font-bold text-white">{tasks.length}</div>
-                  <div className="text-[10px] text-slate-400 font-medium">Tasks</div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{currentStreak} <span className="text-xs font-bold text-[#9CA3AF]">days</span></div>
+                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                    {currentStreak > 0 ? "Keep it up!" : "Start your first focus session"}
+                  </p>
+                </div>
+                <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+                  <div className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#A855F7]" style={{ width: `${currentStreak > 0 ? Math.min(100, currentStreak * 20) : 0}%` }} />
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2.5">
-                <Clock className="w-5 h-5 text-blue-400 shrink-0" />
+              {/* 2. Focus Time */}
+              <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden shadow-md">
+                <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+                  <Clock className="w-4 h-4 text-[#22C55E]" />
+                  <span>Focus Time</span>
+                </div>
                 <div>
-                  <div className="text-lg font-bold text-white">{formattedStudyTime}</div>
-                  <div className="text-[10px] text-slate-400 font-medium">Study Time</div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{totalStudyMinutesToday} <span className="text-xs font-bold text-[#9CA3AF]">min</span></div>
+                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                    {totalStudyMinutesToday > 0 ? "Today" : "Start your first focus session"}
+                  </p>
+                </div>
+                <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+                  <div className="h-full bg-[#22C55E]" style={{ width: `${totalStudyMinutesToday > 0 ? Math.min(100, (totalStudyMinutesToday / 120) * 100) : 0}%` }} />
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2.5">
-                <Flame className="w-5 h-5 text-amber-400 fill-amber-400/20 shrink-0" />
+              {/* 3. Tasks Done */}
+              <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden shadow-md">
+                <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-[#3B82F6]" />
+                  <span>Tasks Done</span>
+                </div>
                 <div>
-                  <div className="text-lg font-bold text-white">{currentStreak}</div>
-                  <div className="text-[10px] text-slate-400 font-medium">Day Streak</div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{tasks.filter(t => t.status === 'Completed').length}/{tasks.length}</div>
+                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                    {tasks.filter(t => t.status === 'Completed').length > 0 ? "Complete your tasks!" : "Complete your first task"}
+                  </p>
+                </div>
+                <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+                  <div className="h-full bg-[#3B82F6]" style={{ width: `${tasks.length > 0 && tasks.filter(t => t.status === 'Completed').length > 0 ? (tasks.filter(t => t.status === 'Completed').length / tasks.length) * 100 : 0}%` }} />
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2.5">
-                <Target className="w-5 h-5 text-emerald-400 shrink-0" />
+              {/* 4. Progress */}
+              <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden shadow-md">
+                <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+                  <TrendingUp className="w-4 h-4 text-[#A855F7]" />
+                  <span>Progress</span>
+                </div>
                 <div>
-                  <div className="text-lg font-bold text-white">{progressPercentage}%</div>
-                  <div className="text-[10px] text-slate-400 font-medium">Daily Goal</div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{progressPercentage}%</div>
+                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                    {progressPercentage > 0 ? "Keep progressing!" : "Your progress will appear here."}
+                  </p>
+                </div>
+                <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+                  <div className="h-full bg-[#A855F7]" style={{ width: `${progressPercentage}%` }} />
                 </div>
               </div>
+
             </div>
 
             {/* Tasks + Timer + Progress Row */}

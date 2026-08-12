@@ -1,13 +1,27 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Student Productivity OS by PSR</title>
+    <meta name="description" content="Plan. Focus. Improve. An all-in-one student productivity OS with Pomodoro timer, task manager, study stats, and offline PWA support." />
+    <meta name="theme-color" content="#09090F" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.json" />
   </head>
-  <body>
+  <body class="bg-[#09090F] text-white antialiased selection:bg-[#8B5CF6] selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.log('SW registration failed:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
 

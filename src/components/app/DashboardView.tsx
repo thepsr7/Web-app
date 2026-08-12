@@ -1,528 +1,642 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Play, Pause, Plus, CheckCircle2, Circle, Flame, Clock, Target, Calendar, ArrowRight, ShieldCheck, Sparkles, BookOpen } from 'lucide-react';
+import {
+  Bell,
+  Calendar,
+  Flame,
+  Clock,
+  CheckCircle2,
+  TrendingUp,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  ClipboardList,
+  Sparkles,
+  ArrowRight,
+  Info,
+  HelpCircle,
+  Shield,
+  RotateCcw,
+  LogOut,
+  GraduationCap,
+  Check,
+  MessageSquare,
+  AlertCircle,
+  Mail,
+  X,
+  Zap
+} from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
-  const { 
-    user, 
-    tasks, 
-    toggleTaskComplete, 
-    addTask,
-    timerSecondsLeft, 
-    isTimerRunning, 
-    startTimer, 
-    pauseTimer, 
-    completedSessionsToday, 
-    schedule,
-    streakDays,
+  const {
+    user,
+    tasks,
+    toggleTaskComplete,
     currentStreak,
     totalStudyMinutesToday,
     progressPercentage,
-    goal,
     setActiveTab,
-    openAuthModal
+    openAddTaskModal,
+    resetAllData,
+    logout,
+    preferences
   } = useApp();
 
-  const [isQuickTaskModalOpen, setIsQuickTaskModalOpen] = useState(false);
-  const [quickTitle, setQuickTitle] = useState('');
-  const [quickSubject, setQuickSubject] = useState('Physics');
-  const [quickPriority, setQuickPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
+  // Selected date state
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+  // Expanded Accordion States for MORE section
+  const [expandedSection, setExpandedSection] = useState<'about' | 'help' | 'privacy' | null>(null);
+
+  // Modal states for Help & Support sub-items
+  const [activeSupportModal, setActiveSupportModal] = useState<'faqs' | 'contact' | 'report' | null>(null);
+  const [supportMessage, setSupportMessage] = useState('');
+  const [supportSubmitted, setSupportSubmitted] = useState(false);
+  const [resetNotification, setResetNotification] = useState(false);
 
   // Time-based greeting helper
   const hour = new Date().getHours();
-  const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const timeGreeting = hour < 12 ? 'Good Morning!' : hour < 17 ? 'Good Afternoon!' : 'Good Evening!';
 
-  // Format timer seconds left into MM:SS
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  // Format today's date for display
+  const formattedSelectedDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    weekday: 'long',
+  });
+
+  const totalTasks = tasks.length;
+  const completedTasksCount = tasks.filter(t => t.status === 'Completed').length;
+  const pendingTasks = tasks.filter(t => t.status === 'Pending');
+
+  const toggleAccordion = (section: 'about' | 'help' | 'privacy') => {
+    setExpandedSection(prev => prev === section ? null : section);
   };
 
-  // Convert study minutes into "2h 35m" format
-  const hours = Math.floor(totalStudyMinutesToday / 60);
-  const mins = totalStudyMinutesToday % 60;
-  const formattedStudyTime = `${hours}h ${mins}m`;
-
-  const handleQuickTaskSubmit = (e: React.FormEvent) => {
+  const handleSupportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickTitle.trim()) return;
-    addTask({
-      title: quickTitle,
-      subject: quickSubject,
-      priority: quickPriority,
-      status: 'Pending',
-      estimatedMinutes: 30,
-    });
-    setQuickTitle('');
-    setIsQuickTaskModalOpen(false);
+    setSupportSubmitted(true);
+    setTimeout(() => {
+      setSupportSubmitted(false);
+      setSupportMessage('');
+      setActiveSupportModal(null);
+    }, 2000);
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 pb-24 max-w-4xl mx-auto animate-fadeIn">
       
-      {/* Top Banner & Greeting */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-slate-900/90 via-purple-950/40 to-slate-900/90 border border-slate-800/80 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 mb-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>STUDY OS DASHBOARD OVERVIEW</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            {timeGreeting}, <span className="bg-gradient-to-r from-purple-300 to-indigo-300 bg-clip-text text-transparent">{user.name}!</span> 👋
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Let's make today productive. Stay focused and reach your goals.
-          </p>
-        </div>
-
-        {/* Quick actions buttons */}
-        <div className="relative z-10 flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setIsQuickTaskModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-lg shadow-purple-600/30 transition-all hover:scale-105 active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            Add Task
-          </button>
-          <button
-            onClick={() => setActiveTab('focus')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-all hover:scale-105"
-          >
-            <Clock className="w-4 h-4 text-purple-400" />
-            Focus Session
-          </button>
-        </div>
-      </div>
-
-      {/* Local Storage Privacy Note Banner */}
-      <div className="flex items-center gap-3 p-3.5 rounded-xl bg-violet-950/30 border border-violet-800/40 text-xs text-violet-200/90">
-        <ShieldCheck className="w-4 h-4 text-violet-400 shrink-0" />
-        <span>
-          <strong>Private Workspace:</strong> Your study tasks, schedules, and focus sessions are stored securely in your browser's local storage.
-        </span>
-      </div>
-
-      {/* 4 Summary Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        {/* Total Tasks Card */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-lg flex items-center gap-4 hover:border-slate-700/80 transition-all">
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-6 h-6" />
+      {/* Top Banner Card matching screenshot */}
+      <div className="p-4 sm:p-5 rounded-[22px] bg-[#141726] border border-[#2A2A40] flex items-center justify-between gap-4 shadow-lg">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#8B5CF6] to-[#A855F7] p-0.5 shrink-0 flex items-center justify-center text-white shadow-md shadow-[#8B5CF6]/20">
+            <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white tracking-tight">{tasks.length}</div>
-            <div className="text-xs font-medium text-slate-400">Total Tasks</div>
-          </div>
-        </div>
-
-        {/* Study Time Card */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-lg flex items-center gap-4 hover:border-slate-700/80 transition-all">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-            <Clock className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-white tracking-tight">{formattedStudyTime}</div>
-            <div className="text-xs font-medium text-slate-400">Study Time</div>
-          </div>
-        </div>
-
-        {/* Study Streak Card */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-lg flex items-center gap-4 hover:border-slate-700/80 transition-all">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-            <Flame className="w-6 h-6 fill-amber-400/20" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-white tracking-tight">{currentStreak} Days</div>
-            <div className="text-xs font-medium text-slate-400">Day Streak</div>
-          </div>
-        </div>
-
-        {/* Daily Progress Goal Card */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-lg flex items-center gap-4 hover:border-slate-700/80 transition-all">
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold text-sm">
-            {progressPercentage}%
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-white tracking-tight">{progressPercentage}%</div>
-            <div className="text-xs font-medium text-slate-400">Daily Goal</div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Main Grid: Today's Tasks, Quick Focus Timer, Today's Progress */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Today's Tasks List */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-base text-white flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-purple-400" />
-                Today's Tasks
-              </h2>
-              <button
-                onClick={() => setIsQuickTaskModalOpen(true)}
-                className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1"
-              >
-                + Add Task
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {tasks.length === 0 ? (
-                <div className="p-6 text-center rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-2">
-                  <BookOpen className="w-8 h-8 text-violet-400 mx-auto opacity-60" />
-                  <p className="text-xs font-semibold text-slate-300">No study tasks created yet</p>
-                  <p className="text-[11px] text-slate-500">Click "+ Add Task" to create your first task!</p>
-                </div>
-              ) : (
-                tasks.slice(0, 4).map(task => (
-                  <div
-                    key={task.id}
-                    onClick={() => toggleTaskComplete(task.id)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                      task.status === 'Completed'
-                        ? 'bg-slate-950/40 border-slate-800/60 opacity-60'
-                        : 'bg-slate-800/40 border-slate-700/60 hover:bg-slate-800/80 hover:border-purple-500/50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <button className="text-purple-400 shrink-0">
-                        {task.status === 'Completed' ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
-                        ) : (
-                          <Circle className="w-5 h-5 text-slate-500 hover:text-purple-400" />
-                        )}
-                      </button>
-                      <div className="truncate">
-                        <div className={`text-xs font-semibold ${task.status === 'Completed' ? 'line-through text-slate-400' : 'text-slate-100'}`}>
-                          {task.title}
-                        </div>
-                        <div className="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                          <span>{task.subject}</span>
-                          <span>•</span>
-                          <span className={`font-semibold ${
-                            task.priority === 'High' ? 'text-red-400' : task.priority === 'Medium' ? 'text-amber-400' : 'text-blue-400'
-                          }`}>
-                            {task.priority}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <button
-            onClick={() => setActiveTab('tasks')}
-            className="w-full mt-4 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
-          >
-            <span>View All Tasks</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Quick Focus Timer */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl flex flex-col justify-between text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-base text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-purple-400" />
-                Focus Timer
-              </h2>
-              <span className="text-xs font-medium text-slate-400">25 Min Focus</span>
-            </div>
-
-            {/* Circular Timer Visual */}
-            <div className="relative w-44 h-44 mx-auto my-3 flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="88"
-                  cy="88"
-                  r="78"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  className="text-slate-800"
-                  fill="transparent"
-                />
-                <circle
-                  cx="88"
-                  cy="88"
-                  r="78"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  className="text-purple-500 transition-all duration-1000"
-                  fill="transparent"
-                  strokeDasharray={490}
-                  strokeDashoffset={490 - (490 * (25 * 60 - timerSecondsLeft)) / (25 * 60)}
-                  strokeLinecap="round"
-                />
-              </svg>
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-extrabold text-white tracking-wider font-mono">
-                  {formatTime(timerSecondsLeft)}
-                </span>
-                <span className="text-[11px] font-medium text-purple-300/80 mt-1">Focus Time</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-3 mt-2">
-              {isTimerRunning ? (
-                <button
-                  onClick={pauseTimer}
-                  className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs shadow-lg shadow-amber-600/30 transition-all flex items-center gap-2"
-                >
-                  <Pause className="w-4 h-4" />
-                  Pause
-                </button>
-              ) : (
-                <button
-                  onClick={startTimer}
-                  className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
-                >
-                  <Play className="w-4 h-4 fill-current" />
-                  Start Focus
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-center gap-2">
-            <span>Sessions Today: <strong className="text-white">{completedSessionsToday}</strong></span>
-          </div>
-        </div>
-
-        {/* Today's Progress Card */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-base text-white flex items-center gap-2">
-                <Target className="w-4 h-4 text-purple-400" />
-                Today's Progress
-              </h2>
-              <button
-                onClick={() => setActiveTab('goals')}
-                className="text-xs font-semibold text-purple-400 hover:text-purple-300"
-              >
-                Edit Goal
-              </button>
-            </div>
-
-            {/* Circular Progress Gauge */}
-            <div className="p-4 rounded-xl bg-slate-850/60 border border-slate-800 flex items-center justify-around">
-              <div className="relative w-24 h-24 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="38"
-                    stroke="currentColor"
-                    strokeWidth="6"
-                    className="text-slate-800"
-                    fill="transparent"
-                  />
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="38"
-                    stroke="currentColor"
-                    strokeWidth="6"
-                    className="text-emerald-400 transition-all duration-1000"
-                    fill="transparent"
-                    strokeDasharray={238}
-                    strokeDashoffset={238 - (238 * progressPercentage) / 100}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-base font-extrabold text-white">{progressPercentage}%</span>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs text-slate-400 font-medium">Daily Goal</div>
-                <div className="text-lg font-bold text-white">{goal.targetHours}h Target</div>
-                <div className="text-xs text-purple-300 mt-1 font-semibold">{formattedStudyTime} Studied</div>
-                <div className="text-[11px] text-slate-400">{completedSessionsToday} Focus Sessions</div>
-              </div>
-            </div>
-
-            <div className="mt-4 p-3 rounded-xl bg-purple-950/20 border border-purple-800/30 text-xs text-purple-200 font-medium italic text-center">
-              "Discipline today leads to success tomorrow."
-            </div>
-          </div>
-
-          <button
-            onClick={() => setActiveTab('stats')}
-            className="w-full mt-4 py-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5"
-          >
-            <span>View Full Statistics</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-      </div>
-
-      {/* Schedule & Streak Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Today's Schedule Card */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-base text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-purple-400" />
-              Today's Schedule
+            <h2 className="text-sm font-extrabold text-white tracking-tight flex items-center gap-2">
+              <span>Study</span>
+              <span className="text-[#8B5CF6]">Productivity OS</span>
             </h2>
+            <p className="text-xs text-[#9CA3AF] mt-0.5">Plan. Focus. Improve.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="p-2.5 rounded-2xl bg-[#09090F] border border-[#2A2A40] text-[#9CA3AF] hover:text-white hover:border-[#8B5CF6]/50 transition-all shadow-md relative"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+          </button>
+          
+          <div className="w-9 h-9 rounded-2xl bg-[#8B5CF6] text-white font-black text-xs flex items-center justify-center shadow-md shadow-[#8B5CF6]/30">
+            {user.name ? user.name.slice(0, 3).toUpperCase() : 'GOO'}
+          </div>
+        </div>
+      </div>
+
+      {/* Greeting Header */}
+      <div className="pt-1">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <span>{timeGreeting}</span>
+          <span className="text-xl">👋</span>
+        </h1>
+        <p className="text-xs sm:text-sm text-[#9CA3AF] mt-1 font-medium">
+          Let's make today productive.
+        </p>
+      </div>
+
+      {/* Motivational Quote Banner - Toggleable in Settings */}
+      {preferences.notifications.motivationalQuotes && (
+        <div className="p-4 rounded-[22px] bg-gradient-to-r from-[#8B5CF6]/15 via-[#A855F7]/10 to-[#141726] border border-[#8B5CF6]/30 flex items-center gap-3.5 shadow-md animate-fadeIn">
+          <div className="p-2.5 rounded-2xl bg-[#8B5CF6] text-white shrink-0 shadow-md shadow-[#8B5CF6]/30">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-[#8B5CF6]">Daily Motivation</div>
+            <p className="text-xs font-semibold text-white mt-0.5 italic">
+              "Small daily improvements over time lead to stunning, long-lasting results."
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Select Date Card matching screenshot */}
+      <div
+        onClick={() => setIsDatePickerOpen(true)}
+        className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] hover:border-[#8B5CF6]/50 flex items-center justify-between text-xs font-semibold text-white shadow-md cursor-pointer transition-all"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-2xl bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 flex items-center justify-center text-[#8B5CF6]">
+            <Calendar className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-[#9CA3AF] text-[10px] block uppercase tracking-wider font-extrabold">Select Date</span>
+            <span className="text-xs font-extrabold text-white">{formattedSelectedDate}</span>
+          </div>
+        </div>
+        <span className="text-[#8B5CF6] text-xs font-bold hover:underline">Choose a date →</span>
+      </div>
+
+      {/* Date Picker Modal */}
+      {isDatePickerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="p-6 rounded-[22px] bg-[#141726] border border-[#2A2A40] w-full max-w-sm space-y-4 shadow-2xl animate-scaleUp">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-white">Choose Study Date</h3>
+              <button onClick={() => setIsDatePickerOpen(false)} className="p-1 rounded-xl text-[#9CA3AF] hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                if (e.target.value) setSelectedDate(e.target.value);
+              }}
+              className="w-full p-3 rounded-2xl bg-[#09090F] border border-[#2A2A40] text-white text-xs focus:outline-none focus:border-[#8B5CF6]"
+            />
             <button
-              onClick={() => setActiveTab('schedule')}
-              className="text-xs font-semibold text-purple-400 hover:text-purple-300"
+              onClick={() => setIsDatePickerOpen(false)}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] text-white font-extrabold text-xs shadow-lg shadow-[#8B5CF6]/30"
             >
-              View Full Schedule
+              Confirm Date
             </button>
           </div>
+        </div>
+      )}
 
-          <div className="space-y-2.5">
-            {schedule.slice(0, 4).map(item => (
-              <div
-                key={item.id}
-                className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/60 flex items-center justify-between text-xs"
-              >
+      {/* Overview 4 Stat Cards matching screenshot */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-extrabold text-[#9CA3AF] uppercase tracking-wider px-1">
+          Overview
+        </h2>
+
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          
+          {/* 1. Study Streak */}
+          <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden group hover:border-[#8B5CF6]/50 transition-all shadow-md">
+            <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+              <Flame className="w-4 h-4 text-[#8B5CF6]" />
+              <span>Study Streak</span>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{currentStreak} <span className="text-xs font-bold text-[#9CA3AF]">days</span></div>
+              <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                {currentStreak > 0 ? "Keep it up!" : "Start your first focus session"}
+              </p>
+            </div>
+            <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+              <div className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#A855F7]" style={{ width: `${currentStreak > 0 ? Math.min(100, currentStreak * 20) : 0}%` }} />
+            </div>
+          </div>
+
+          {/* 2. Focus Time */}
+          <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden group hover:border-[#8B5CF6]/50 transition-all shadow-md">
+            <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+              <Clock className="w-4 h-4 text-[#22C55E]" />
+              <span>Focus Time</span>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{totalStudyMinutesToday} <span className="text-xs font-bold text-[#9CA3AF]">min</span></div>
+              <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                {totalStudyMinutesToday > 0 ? "Today" : "Start your first focus session"}
+              </p>
+            </div>
+            <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+              <div className="h-full bg-[#22C55E]" style={{ width: `${totalStudyMinutesToday > 0 ? Math.min(100, (totalStudyMinutesToday / 120) * 100) : 0}%` }} />
+            </div>
+          </div>
+
+          {/* 3. Tasks Done */}
+          <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden group hover:border-[#8B5CF6]/50 transition-all shadow-md">
+            <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+              <CheckCircle2 className="w-4 h-4 text-[#3B82F6]" />
+              <span>Tasks Done</span>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{completedTasksCount}/{totalTasks}</div>
+              <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                {completedTasksCount > 0 ? "Complete your tasks!" : "Complete your first task"}
+              </p>
+            </div>
+            <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+              <div className="h-full bg-[#3B82F6]" style={{ width: `${totalTasks > 0 && completedTasksCount > 0 ? (completedTasksCount / totalTasks) * 100 : 0}%` }} />
+            </div>
+          </div>
+
+          {/* 4. Progress */}
+          <div className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2 relative overflow-hidden group hover:border-[#8B5CF6]/50 transition-all shadow-md">
+            <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-bold">
+              <TrendingUp className="w-4 h-4 text-[#A855F7]" />
+              <span>Progress</span>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">{progressPercentage}%</div>
+              <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                {progressPercentage > 0 ? "Keep progressing!" : "Your progress will appear here."}
+              </p>
+            </div>
+            <div className="w-full h-1 bg-[#2A2A40] rounded-full overflow-hidden mt-1">
+              <div className="h-full bg-[#A855F7]" style={{ width: `${progressPercentage}%` }} />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Main Content Area: Empty State Card OR Task / Focus List */}
+      {totalStudyMinutesToday === 0 && tasks.length === 0 ? (
+        /* Empty State Card matching screenshot */
+        <div className="p-8 sm:p-10 rounded-[22px] bg-[#141726] border border-[#2A2A40] flex flex-col items-center justify-center text-center space-y-4 shadow-xl">
+          <div className="relative w-20 h-20 rounded-2xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center">
+            <ClipboardList className="w-10 h-10 text-[#8B5CF6]" />
+            <Sparkles className="w-4 h-4 text-[#A855F7] absolute -top-1 -right-1 animate-pulse" />
+          </div>
+
+          <div className="space-y-1">
+            <h3 className="text-base font-extrabold text-white">No study data yet.</h3>
+            <p className="text-xs text-[#9CA3AF] max-w-sm leading-relaxed">
+              Start your first task or focus session to see your progress here.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button
+              onClick={openAddTaskModal}
+              className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] hover:opacity-95 text-white font-extrabold text-xs shadow-lg shadow-[#8B5CF6]/30 flex items-center gap-2 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add First Task</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('focus')}
+              className="px-5 py-2.5 rounded-2xl bg-[#09090F] border border-[#2A2A40] hover:border-[#8B5CF6] text-white font-extrabold text-xs flex items-center gap-2 transition-all"
+            >
+              <Zap className="w-4 h-4 text-[#8B5CF6]" />
+              <span>Start Focus Timer</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Task list if tasks exist */
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-extrabold text-white">Active Study Tasks</h3>
+            <button onClick={openAddTaskModal} className="text-xs text-[#8B5CF6] font-bold hover:underline">+ Add Task</button>
+          </div>
+          <div className="space-y-2">
+            {pendingTasks.map(t => (
+              <div key={t.id} onClick={() => toggleTaskComplete(t.id)} className="p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] flex items-center justify-between cursor-pointer hover:border-[#8B5CF6]/50">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-purple-400 bg-purple-500/10 px-2 py-1 rounded-md border border-purple-500/20">
-                    {item.time}
-                  </span>
+                  <div className="w-5 h-5 rounded-full border-2 border-[#2A2A40]" />
                   <div>
-                    <div className="font-semibold text-white">{item.subject}</div>
-                    <div className="text-[11px] text-slate-400">{item.description}</div>
+                    <h4 className="text-xs font-bold text-white">{t.title}</h4>
+                    <p className="text-[11px] text-[#9CA3AF]">{t.subject}</p>
                   </div>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                  item.completed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-300'
-                }`}>
-                  {item.completed ? 'Done' : 'Upcoming'}
-                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#8B5CF6]/20 text-[#8B5CF6]">{t.priority}</span>
               </div>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Study Streak Calendar Card */}
-        <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-base text-white flex items-center gap-2">
-                <Flame className="w-4 h-4 text-amber-400 fill-amber-400/20" />
-                Study Streak ({currentStreak} Days)
-              </h2>
-              <span className="text-xs text-amber-300 font-semibold bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                On Fire 🔥
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mb-4">
-              Keep it up! Consistency build habits that drive high test scores and deep mastery.
-            </p>
+      {/* MORE Accordion Section matching screenshot */}
+      <div className="space-y-3 pt-2">
+        <h3 className="text-xs font-extrabold text-[#9CA3AF] uppercase tracking-wider px-1">
+          MORE
+        </h3>
 
-            {/* Weekly Days Bar */}
-            <div className="grid grid-cols-7 gap-2">
-              {streakDays.map((d, i) => (
-                <div
-                  key={i}
-                  className={`p-2.5 rounded-xl border text-center flex flex-col items-center justify-between transition-all ${
-                    d.completed
-                      ? 'bg-gradient-to-b from-amber-500/20 to-purple-500/10 border-amber-500/40 text-amber-300'
-                      : 'bg-slate-800/40 border-slate-700/50 text-slate-500'
-                  }`}
-                >
-                  <span className="text-[10px] font-bold uppercase">{d.day}</span>
-                  <Flame className={`w-5 h-5 my-1.5 ${d.completed ? 'text-amber-400 fill-amber-400' : 'text-slate-600'}`} />
-                  <span className="text-[9px] font-mono font-medium">
-                    {d.completed ? `${d.hoursStudied}h` : '-'}
-                  </span>
+        <div className="space-y-2.5">
+          
+          {/* 1. About Study Productivity OS */}
+          <div className="rounded-[22px] bg-[#141726] border border-[#2A2A40] overflow-hidden transition-all shadow-md">
+            <button
+              onClick={() => toggleAccordion('about')}
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-[#2A2A40]/30 transition-all"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 rounded-2xl bg-[#8B5CF6]/15 text-[#8B5CF6]">
+                  <Info className="w-5 h-5" />
                 </div>
-              ))}
-            </div>
+                <div>
+                  <h4 className="text-xs font-extrabold text-white">About Study Productivity OS</h4>
+                  <p className="text-[11px] text-[#9CA3AF]">Learn more about the app</p>
+                </div>
+              </div>
+              {expandedSection === 'about' ? (
+                <ChevronUp className="w-5 h-5 text-[#9CA3AF]" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-[#9CA3AF]" />
+              )}
+            </button>
+
+            {/* Expanded Accordion Body matching screenshot */}
+            {expandedSection === 'about' && (
+              <div className="p-5 border-t border-[#2A2A40] bg-[#09090F]/50 space-y-3 text-xs animate-fadeIn">
+                <div className="font-extrabold text-white text-sm">Version 1.0.0</div>
+                <p className="text-[#9CA3AF] leading-relaxed">
+                  Study Productivity OS is your all-in-one platform to help you stay focused, manage tasks, build study habits, and track your progress.
+                </p>
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center gap-2.5 text-white font-medium">
+                    <div className="w-4 h-4 rounded-full bg-[#8B5CF6] flex items-center justify-center shrink-0 text-white">
+                      <Check className="w-3 h-3" />
+                    </div>
+                    <span>Focus better with Pomodoro sessions</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-white font-medium">
+                    <div className="w-4 h-4 rounded-full bg-[#8B5CF6] flex items-center justify-center shrink-0 text-white">
+                      <Check className="w-3 h-3" />
+                    </div>
+                    <span>Stay organized with tasks and goals</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-white font-medium">
+                    <div className="w-4 h-4 rounded-full bg-[#8B5CF6] flex items-center justify-center shrink-0 text-white">
+                      <Check className="w-3 h-3" />
+                    </div>
+                    <span>Track your progress and build consistency</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-white font-medium">
+                    <div className="w-4 h-4 rounded-full bg-[#8B5CF6] flex items-center justify-center shrink-0 text-white">
+                      <Check className="w-3 h-3" />
+                    </div>
+                    <span>Designed for students and lifelong learners</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="mt-4 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-xs text-slate-300 flex items-center justify-between">
-            <span>Weekly Goal: 5/7 Days Completed</span>
-            <span className="font-bold text-amber-400">85% Complete</span>
+          {/* 2. Help & Support */}
+          <div className="rounded-[22px] bg-[#141726] border border-[#2A2A40] overflow-hidden transition-all shadow-md">
+            <button
+              onClick={() => toggleAccordion('help')}
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-[#2A2A40]/30 transition-all"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 rounded-2xl bg-[#8B5CF6]/15 text-[#8B5CF6]">
+                  <HelpCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-extrabold text-white">Help & Support</h4>
+                  <p className="text-[11px] text-[#9CA3AF]">Get help and find answers</p>
+                </div>
+              </div>
+              {expandedSection === 'help' ? (
+                <ChevronUp className="w-5 h-5 text-[#9CA3AF]" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-[#9CA3AF]" />
+              )}
+            </button>
+
+            {/* Expanded Help Body matching screenshot */}
+            {expandedSection === 'help' && (
+              <div className="p-5 border-t border-[#2A2A40] bg-[#09090F]/50 space-y-3 text-xs animate-fadeIn">
+                <p className="text-[#9CA3AF] leading-relaxed">
+                  We're here to help you make the most out of Study Productivity OS.
+                </p>
+
+                <div className="space-y-2 pt-1">
+                  <div
+                    onClick={() => setActiveSupportModal('faqs')}
+                    className="p-3.5 rounded-2xl bg-[#141726] border border-[#2A2A40] hover:border-[#8B5CF6] flex items-center justify-between cursor-pointer transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <HelpCircle className="w-4 h-4 text-[#8B5CF6]" />
+                      <div>
+                        <div className="font-bold text-white">FAQs</div>
+                        <div className="text-[11px] text-[#9CA3AF]">Find answers to common questions.</div>
+                      </div>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-[#9CA3AF] -rotate-90" />
+                  </div>
+
+                  <div
+                    onClick={() => setActiveSupportModal('contact')}
+                    className="p-3.5 rounded-2xl bg-[#141726] border border-[#2A2A40] hover:border-[#8B5CF6] flex items-center justify-between cursor-pointer transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className="w-4 h-4 text-[#8B5CF6]" />
+                      <div>
+                        <div className="font-bold text-white">Contact Support</div>
+                        <div className="text-[11px] text-[#9CA3AF]">Get a touch with our support team.</div>
+                      </div>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-[#9CA3AF] -rotate-90" />
+                  </div>
+
+                  <div
+                    onClick={() => setActiveSupportModal('report')}
+                    className="p-3.5 rounded-2xl bg-[#141726] border border-[#2A2A40] hover:border-[#8B5CF6] flex items-center justify-between cursor-pointer transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-4 h-4 text-[#8B5CF6]" />
+                      <div>
+                        <div className="font-bold text-white">Report a Problem</div>
+                        <div className="text-[11px] text-[#9CA3AF]">Let us know if something isn't working.</div>
+                      </div>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-[#9CA3AF] -rotate-90" />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2 text-[#9CA3AF] font-medium">
+                    <Mail className="w-4 h-4 text-[#8B5CF6]" />
+                    <span>Email: <strong className="text-[#8B5CF6]">support@studyos.app</strong></span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* 3. Privacy Policy */}
+          <div className="rounded-[22px] bg-[#141726] border border-[#2A2A40] overflow-hidden transition-all shadow-md">
+            <button
+              onClick={() => toggleAccordion('privacy')}
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-[#2A2A40]/30 transition-all"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 rounded-2xl bg-[#8B5CF6]/15 text-[#8B5CF6]">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-extrabold text-white">Privacy Policy</h4>
+                  <p className="text-[11px] text-[#9CA3AF]">Read our privacy policy</p>
+                </div>
+              </div>
+              {expandedSection === 'privacy' ? (
+                <ChevronUp className="w-5 h-5 text-[#9CA3AF]" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-[#9CA3AF]" />
+              )}
+            </button>
+
+            {/* Expanded Privacy Body matching screenshot */}
+            {expandedSection === 'privacy' && (
+              <div className="p-5 border-t border-[#2A2A40] bg-[#09090F]/50 space-y-3 text-xs animate-fadeIn">
+                <div className="text-[11px] font-bold text-[#9CA3AF]">Last updated: May 12, 2024</div>
+                <p className="text-[#9CA3AF] leading-relaxed">
+                  Your privacy is important to us. This policy explains what data we collect, how we use it, and the choices you have.
+                </p>
+
+                <div className="space-y-2 pt-1">
+                  <div className="p-3 rounded-2xl bg-[#141726] border border-[#2A2A40] space-y-1">
+                    <div className="font-bold text-white flex items-center gap-2">
+                      <Shield className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                      <span>Information We Collect</span>
+                    </div>
+                    <p className="text-[11px] text-[#9CA3AF]">We collect only the data needed to provide better experience.</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-[#141726] border border-[#2A2A40] space-y-1">
+                    <div className="font-bold text-white flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                      <span>How We Use Your Data</span>
+                    </div>
+                    <p className="text-[11px] text-[#9CA3AF]">We use your data to improve the app, personalize content, and keep your account secure.</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-[#141726] border border-[#2A2A40] space-y-1">
+                    <div className="font-bold text-white flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                      <span>Your Rights</span>
+                    </div>
+                    <p className="text-[11px] text-[#9CA3AF]">You can access, update, or delete your data anytime.</p>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-[#141726] border border-[#2A2A40] space-y-1">
+                    <div className="font-bold text-white flex items-center gap-2">
+                      <Zap className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                      <span>Data Security</span>
+                    </div>
+                    <p className="text-[11px] text-[#9CA3AF]">We use industry-standard measures to keep your data safe and secure.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* Action Buttons: Reset & Sign Out matching screenshot */}
+        <div className="space-y-2.5 pt-3">
+          {resetNotification && (
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs text-center animate-fadeIn">
+              ✓ All app statistics, tasks, timer logs, and progress have been reset to zero!
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              if (window.confirm('Reset all tasks, study history, and timer logs to initial zero states?')) {
+                resetAllData();
+                setResetNotification(true);
+                setTimeout(() => setResetNotification(false), 3500);
+              }
+            }}
+            className="w-full p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] hover:border-rose-500/50 text-rose-400 font-extrabold text-xs flex items-center justify-center gap-2.5 transition-all shadow-md"
+          >
+            <RotateCcw className="w-4 h-4 text-rose-400" />
+            <span>Reset App Data to Zero</span>
+          </button>
+
+          <button
+            onClick={logout}
+            className="w-full p-4 rounded-[22px] bg-[#141726] border border-[#2A2A40] hover:border-[#8B5CF6]/50 text-[#9CA3AF] hover:text-white font-extrabold text-xs flex items-center justify-center gap-2.5 transition-all shadow-md"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </button>
         </div>
 
       </div>
 
-      {/* Quick Add Task Modal */}
-      {isQuickTaskModalOpen && (
+      {/* Support Modals */}
+      {activeSupportModal && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-white">Add Quick Task</h3>
-            <form onSubmit={handleQuickTaskSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Task Title</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g., Physics Assignment"
-                  value={quickTitle}
-                  onChange={e => setQuickTitle(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500"
-                />
-              </div>
+          <div className="p-6 rounded-[22px] bg-[#141726] border border-[#2A2A40] w-full max-w-md space-y-4 shadow-2xl animate-scaleUp">
+            
+            <div className="flex items-center justify-between pb-2 border-b border-[#2A2A40]">
+              <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">
+                {activeSupportModal === 'faqs' && 'Frequently Asked Questions'}
+                {activeSupportModal === 'contact' && 'Contact Support Team'}
+                {activeSupportModal === 'report' && 'Report an Issue'}
+              </h3>
+              <button onClick={() => setActiveSupportModal(null)} className="p-1 rounded-xl text-[#9CA3AF] hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Subject</label>
-                  <select
-                    value={quickSubject}
-                    onChange={e => setQuickSubject(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500"
-                  >
-                    <option value="Physics">Physics</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="Literature">Literature</option>
-                  </select>
+            {activeSupportModal === 'faqs' && (
+              <div className="space-y-3 text-xs max-h-[60vh] overflow-y-auto pr-1">
+                <div className="p-3 rounded-2xl bg-[#09090F] border border-[#2A2A40]">
+                  <h4 className="font-extrabold text-white">How does the Pomodoro timer work?</h4>
+                  <p className="text-[#9CA3AF] mt-1">Study for 25 minutes, then take a 5-minute break. After 4 sessions, take a 15-minute long break!</p>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Priority</label>
-                  <select
-                    value={quickPriority}
-                    onChange={e => setQuickPriority(e.target.value as 'High' | 'Medium' | 'Low')}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500"
-                  >
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                  </select>
+                <div className="p-3 rounded-2xl bg-[#09090F] border border-[#2A2A40]">
+                  <h4 className="font-extrabold text-white">Is my data saved safely?</h4>
+                  <p className="text-[#9CA3AF] mt-1">Yes! All your study logs and tasks are saved securely in your browser storage and offline cache.</p>
+                </div>
+                <div className="p-3 rounded-2xl bg-[#09090F] border border-[#2A2A40]">
+                  <h4 className="font-extrabold text-white">How do I build my study streak?</h4>
+                  <p className="text-[#9CA3AF] mt-1">Complete at least one focus session or finish a task each day to maintain your streak!</p>
                 </div>
               </div>
+            )}
 
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsQuickTaskModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/30"
-                >
-                  Create Task
-                </button>
-              </div>
-            </form>
+            {(activeSupportModal === 'contact' || activeSupportModal === 'report') && (
+              <form onSubmit={handleSupportSubmit} className="space-y-3 text-xs">
+                {supportSubmitted ? (
+                  <div className="p-4 rounded-2xl bg-[#22C55E]/10 border border-[#22C55E]/30 text-[#22C55E] text-center font-bold">
+                    Thank you! Your message has been sent to support@studyos.app.
+                  </div>
+                ) : (
+                  <>
+                    <textarea
+                      rows={4}
+                      value={supportMessage}
+                      onChange={e => setSupportMessage(e.target.value)}
+                      placeholder={activeSupportModal === 'contact' ? 'How can we help you today?' : 'Describe what happened or what isn\'t working...'}
+                      className="w-full p-3 rounded-2xl bg-[#09090F] border border-[#2A2A40] text-white focus:outline-none focus:border-[#8B5CF6]"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] text-white font-extrabold shadow-lg shadow-[#8B5CF6]/30"
+                    >
+                      Send Message
+                    </button>
+                  </>
+                )}
+              </form>
+            )}
+
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Task, PomodoroSession, ScheduleItem, DailyGoal, UserProfile, StreakDay, MainViewMode, AppTabMode, TimerMode } from '../types';
-import { loadFromStorage, saveToStorage, STORAGE_KEYS, INITIAL_TASKS, INITIAL_SCHEDULE, INITIAL_GOAL, INITIAL_USER, INITIAL_STREAK, INITIAL_SESSIONS, INITIAL_USERS } from '../utils/storage';
-import { playChime } from '../utils/audio';
+import { Task, PomodoroSession, ScheduleItem, DailyGoal, UserProfile, StreakDay, MainViewMode, AppTabMode, TimerMode, UserPreferences } from '../types';
+import { loadFromStorage, saveToStorage, STORAGE_KEYS, INITIAL_TASKS, INITIAL_SCHEDULE, INITIAL_GOAL, INITIAL_USER, INITIAL_STREAK, INITIAL_SESSIONS, INITIAL_USERS, INITIAL_PREFERENCES } from '../utils/storage';
+import { playChime, setAudioPreferences, stopAmbientSound } from '../utils/audio';
 
 export interface AuthResult {
   success: boolean;
@@ -18,6 +18,10 @@ interface AppContextType {
   isDarkMode: boolean;
   toggleTheme: () => void;
   
+  // Preferences matching screenshot
+  preferences: UserPreferences;
+  updatePreferences: (updater: Partial<UserPreferences> | ((prev: UserPreferences) => UserPreferences)) => void;
+
   // Tasks
   tasks: Task[];
   addTask: (task: Omit<Task, 'id'>) => void;
@@ -67,6 +71,11 @@ interface AppContextType {
   closeAuthModal: () => void;
   authModalMode: 'login' | 'signup';
 
+  // Add Task Modal State
+  isAddTaskModalOpen: boolean;
+  openAddTaskModal: () => void;
+  closeAddTaskModal: () => void;
+
   // Derived Stats
   totalStudyMinutesToday: number;
   progressPercentage: number;
@@ -78,17 +87,14 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const TIMER_PRESETS: Record<TimerMode, number> = {
-  'Focus': 25 * 60,
-  'Short Break': 5 * 60,
-  'Long Break': 15 * 60,
-};
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Navigation & Theme
+  // Navigation & Preferences State
   const [mainView, setMainView] = useState<MainViewMode>('showcase');
   const [activeTab, setActiveTab] = useState<AppTabMode>('dashboard');
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => loadFromStorage(STORAGE_KEYS.THEME, true));
+  const [preferences, setPreferences] = useState<UserPreferences>(() => loadFromStorage(STORAGE_KEYS.PREFERENCES, INITIAL_PREFERENCES));
+
+  // Legacy Theme state synced with preferences
+  const isDarkMode = preferences.theme === 'dark' || (preferences.theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   // Data States
   const [tasks, setTasks] = useState<Task[]>(() => loadFromStorage(STORAGE_KEYS.TASKS, INITIAL_TASKS));
@@ -99,17 +105,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [streakDays, setStreakDays] = useState<StreakDay[]>(() => loadFromStorage(STORAGE_KEYS.STREAK, INITIAL_STREAK));
   const [sessions, setSessions] = useState<PomodoroSession[]>(() => loadFromStorage(STORAGE_KEYS.SESSIONS, INITIAL_SESSIONS));
 
-  // Timer State
+  // Timer State based on preferences
   const [timerMode, setTimerModeState] = useState<TimerMode>('Focus');
   const [timerSubject, setTimerSubject] = useState<string>('Physics');
-  const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(TIMER_PRESETS['Focus']);
+  const [timerSecondsLeft, setTimerSecondsLeft] = useState<number>(preferences.focus.defaultFocusDuration * 60);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
   // Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
 
-  // Persistence Effects
+  // Add Task Modal State
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState<boolean>(false);
+  const openAddTaskModal = () => setIsAddTaskModalOpen(true);
+  const closeAddTaskModal = () => setIsAddTaskModalOpen(false);
+
+  // Clean up all legacy keys on mount if present
+  useEffect(() => {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('study_os_') && !key.startsWith('study_os_zero_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  // Persistence & Effects
+  useEffect(() => { saveToStorage(STORAGE_KEYS.PREFERENCES, preferences); }, [preferences]);
   useEffect(() => { saveToStorage(STORAGE_KEYS.THEME, isDarkMode); }, [isDarkMode]);
   useEffect(() => { saveToStorage(STORAGE_KEYS.TASKS, tasks); }, [tasks]);
   useEffect(() => { saveToStorage(STORAGE_KEYS.SCHEDULE, schedule); }, [schedule]);
@@ -119,16 +147,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => { saveToStorage(STORAGE_KEYS.STREAK, streakDays); }, [streakDays]);
   useEffect(() => { saveToStorage(STORAGE_KEYS.SESSIONS, sessions); }, [sessions]);
 
+  // Sync Audio preferences
+  useEffect(() => {
+    setAudioPreferences({
+      soundStart: preferences.soundHaptics.sessionStartSound,
+      soundEnd: preferences.soundHaptics.sessionEndSound,
+      haptics: preferences.soundHaptics.hapticFeedback,
+    });
+  }, [preferences.soundHaptics]);
+
+  // Sync Timer Duration when focus preferences change and timer is paused
+  useEffect(() => {
+    if (!isTimerRunning) {
+      if (timerMode === 'Focus') {
+        setTimerSecondsLeft(preferences.focus.defaultFocusDuration * 60);
+      } else if (timerMode === 'Short Break') {
+        setTimerSecondsLeft(preferences.focus.shortBreakDuration * 60);
+      } else if (timerMode === 'Long Break') {
+        setTimerSecondsLeft(preferences.focus.longBreakDuration * 60);
+      }
+    }
+  }, [preferences.focus.defaultFocusDuration, preferences.focus.shortBreakDuration, preferences.focus.longBreakDuration, timerMode, isTimerRunning]);
+
   // Handle dark mode class on document element
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
     } else {
+      document.documentElement.classList.add('light');
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
 
-  // Pomodoro Countdown effect
+  // Helper function to update preferences
+  const updatePreferences = (updater: Partial<UserPreferences> | ((prev: UserPreferences) => UserPreferences)) => {
+    setPreferences(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
+      return next;
+    });
+    playChime('click');
+  };
+
+  const getModeDurationInSeconds = (mode: TimerMode): number => {
+    if (mode === 'Focus') return preferences.focus.defaultFocusDuration * 60;
+    if (mode === 'Short Break') return preferences.focus.shortBreakDuration * 60;
+    if (mode === 'Long Break') return preferences.focus.longBreakDuration * 60;
+    return 25 * 60;
+  };
+
+  // Pomodoro Countdown effect with auto-start support & notifications
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (isTimerRunning && timerSecondsLeft > 0) {
@@ -140,35 +208,76 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       playChime('complete');
       
       if (timerMode === 'Focus') {
+        const completedDuration = preferences.focus.defaultFocusDuration;
         const newSession: PomodoroSession = {
           id: Date.now().toString(),
           subject: timerSubject || 'General Study',
-          durationMinutes: 25,
+          durationMinutes: completedDuration,
           completedAt: `Today, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
           type: 'Focus',
         };
-        setSessions(prev => [newSession, ...prev]);
+        const updatedSessions = [newSession, ...sessions];
+        setSessions(updatedSessions);
 
-        setStreakDays(prev => prev.map(d => {
-          if (d.day === 'Fri') {
-            return { ...d, hoursStudied: Number((d.hoursStudied + 0.416).toFixed(2)), completed: true };
+        // Send Break Alert if enabled
+        if (preferences.notifications.breakAlerts && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try {
+            new Notification("Focus Session Finished! 🎉", {
+              body: "Great job! Time for a well-deserved break.",
+            });
+          } catch {
+            // Ignore notification error
           }
-          return d;
-        }));
+        }
+
+        const focusCount = updatedSessions.filter(s => s.type === 'Focus').length;
+        const nextMode: TimerMode = (focusCount % preferences.focus.sessionsBeforeLongBreak === 0) ? 'Long Break' : 'Short Break';
+        
+        setTimerModeState(nextMode);
+        const nextSecs = getModeDurationInSeconds(nextMode);
+        setTimerSecondsLeft(nextSecs);
+
+        if (preferences.focus.autoStartNextSession) {
+          setTimeout(() => setIsTimerRunning(true), 1500);
+        }
+      } else {
+        // Finished Break
+        if (preferences.notifications.focusReminders && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try {
+            new Notification("Break Over! ⚡", {
+              body: "Ready to jump back into your focus session?",
+            });
+          } catch {
+            // Ignore notification error
+          }
+        }
+
+        setTimerModeState('Focus');
+        const nextSecs = getModeDurationInSeconds('Focus');
+        setTimerSecondsLeft(nextSecs);
+
+        if (preferences.focus.autoStartNextSession) {
+          setTimeout(() => setIsTimerRunning(true), 1500);
+        }
       }
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isTimerRunning, timerSecondsLeft, timerMode, timerSubject]);
+  }, [isTimerRunning, timerSecondsLeft, timerMode, timerSubject, preferences.focus, preferences.notifications, sessions]);
 
   // Actions
-  const toggleTheme = () => setIsDarkMode(prev => !prev);
+  const toggleTheme = () => {
+    updatePreferences(prev => ({
+      ...prev,
+      theme: prev.theme === 'dark' ? 'light' : 'dark'
+    }));
+  };
 
   const setTimerMode = (mode: TimerMode) => {
     setTimerModeState(mode);
     setIsTimerRunning(false);
-    setTimerSecondsLeft(TIMER_PRESETS[mode]);
+    setTimerSecondsLeft(getModeDurationInSeconds(mode));
   };
 
   const startTimer = () => {
@@ -184,7 +293,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const resetTimer = () => {
     playChime('click');
     setIsTimerRunning(false);
-    setTimerSecondsLeft(TIMER_PRESETS[timerMode]);
+    setTimerSecondsLeft(getModeDurationInSeconds(timerMode));
   };
 
   const addTask = (newTaskData: Omit<Task, 'id'>) => {
@@ -244,8 +353,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Auth Methods
   const login = (email: string, password?: string): AuthResult => {
     const cleanEmail = email.trim().toLowerCase();
-    
-    // Check against registered users
     const existingUser = registeredUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
     if (existingUser) {
@@ -266,7 +373,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: true, message: `Welcome back, ${existingUser.name}!` };
     }
 
-    // Default fallback for unregistered email
     const newUser: UserProfile = {
       id: 'usr-' + Date.now(),
       name: email.split('@')[0].replace('.', ' ') || 'Student User',
@@ -299,7 +405,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Password must be at least 6 characters long.' };
     }
 
-    // Check duplicate email
     const duplicate = registeredUsers.find(u => u.email.toLowerCase() === cleanEmail);
     if (duplicate) {
       return { success: false, error: 'An account with this email address already exists. Please log in instead.' };
@@ -395,6 +500,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const closeAuthModal = () => setIsAuthModalOpen(false);
 
   const resetAllData = () => {
+    // Explicitly overwrite all localStorage keys to clean zero states
+    saveToStorage(STORAGE_KEYS.TASKS, INITIAL_TASKS);
+    saveToStorage(STORAGE_KEYS.SCHEDULE, INITIAL_SCHEDULE);
+    saveToStorage(STORAGE_KEYS.GOAL, INITIAL_GOAL);
+    saveToStorage(STORAGE_KEYS.USER, INITIAL_USER);
+    saveToStorage(STORAGE_KEYS.USERS_LIST, INITIAL_USERS);
+    saveToStorage(STORAGE_KEYS.STREAK, INITIAL_STREAK);
+    saveToStorage(STORAGE_KEYS.SESSIONS, INITIAL_SESSIONS);
+    saveToStorage(STORAGE_KEYS.PREFERENCES, INITIAL_PREFERENCES);
+    saveToStorage(STORAGE_KEYS.THEME, true);
+
+    // Reset React state
     setTasks(INITIAL_TASKS);
     setSchedule(INITIAL_SCHEDULE);
     setGoal(INITIAL_GOAL);
@@ -402,9 +519,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRegisteredUsers(INITIAL_USERS);
     setStreakDays(INITIAL_STREAK);
     setSessions(INITIAL_SESSIONS);
+    setPreferences(INITIAL_PREFERENCES);
     setTimerModeState('Focus');
-    setTimerSecondsLeft(TIMER_PRESETS['Focus']);
+    setTimerSecondsLeft(INITIAL_PREFERENCES.focus.defaultFocusDuration * 60);
     setIsTimerRunning(false);
+
+    // Stop ambient sound synthesizer if running & trigger feedback click
+    stopAmbientSound();
+    playChime('click');
   };
 
   // Derived Calculations
@@ -427,6 +549,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveTab,
         isDarkMode,
         toggleTheme,
+        preferences,
+        updatePreferences,
         tasks,
         addTask,
         editTask,
@@ -464,6 +588,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openAuthModal,
         closeAuthModal,
         authModalMode,
+        isAddTaskModalOpen,
+        openAddTaskModal,
+        closeAddTaskModal,
         totalStudyMinutesToday,
         progressPercentage,
         totalTasksCompleted,

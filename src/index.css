@@ -1,106 +1,99 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #020617;
-  --surface: #0f172a;
-  --accent: #8b5cf6;
-  --accent-glow: rgba(139, 92, 246, 0.3);
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
+  --bg: #09090F;
+  --surface: #141726;
+  --border: #2A2A40;
+  --primary: #8B5CF6;
+  --secondary: #A855F7;
+  --text: #FFFFFF;
+  --text-muted: #9CA3AF;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
 }
 
-.glass {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
+/* Glass & Card Design System */
+.app-card {
+  background-color: #141726;
+  border: 1px solid #2A2A40;
+  border-radius: 22px;
 }
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
+  background: rgba(20, 23, 38, 0.85);
+  border: 1px solid rgba(42, 42, 64, 0.8);
+  backdrop-filter: blur(16px);
+  border-radius: 22px;
 }
 
-.accent-pill {
-  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-  box-shadow: 0 4px 12px var(--accent-glow);
-}
-
-.timer-ring {
-  border: 4px solid rgba(139, 92, 246, 0.2);
-  border-top: 4px solid var(--accent);
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-}
-
-.mobile-mockup {
-  width: 140px;
-  height: 270px;
-  border: 4px solid #1e293b;
-  border-radius: 20px;
-  position: relative;
-  overflow: hidden;
-  background: #000;
-  font-size: 10px;
-}
-
-.bar-graph {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 40px;
-}
-
-.bar {
-  width: 8px;
-  border-radius: 2px;
-  background: var(--accent);
-  opacity: 0.6;
-}
-
-.bar.active {
-  opacity: 1;
+.purple-glow-pill {
+  background: linear-gradient(135deg, #8B5CF6, #A855F7);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
 }
 
 @layer utilities {
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(4px);
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+    50% {
+      transform: translateY(-6px) rotate(1deg);
     }
   }
 
-  .animate-fadeIn {
-    animation: fadeIn 0.25s ease-out forwards;
+  @keyframes blink {
+    0%, 90%, 100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+    }
+  }
+
+  .animate-float {
+    animation: float 3.5s ease-in-out infinite;
+  }
+
+  .animate-blink {
+    animation: blink 4s infinite;
+  }
+
+  .animate-pulseGlow {
+    animation: pulseGlow 3s ease-in-out infinite;
   }
 }
 
-/* Custom scrollbar styling */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: #09090F;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
+  background: #2A2A40;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b5cf6;
+  background: #8B5CF6;
 }
+
 

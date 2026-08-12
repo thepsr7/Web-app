@@ -1,163 +1,163 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { BarChart3, Clock, CheckCircle2, Flame, Award, TrendingUp, Calendar, BookOpen } from 'lucide-react';
+import {
+  Calendar,
+  BookOpen,
+  Target,
+  CheckCircle2,
+  Flame,
+  Trophy,
+  Clock
+} from 'lucide-react';
 
 export const StatisticsView: React.FC = () => {
   const {
     tasks,
     sessions,
-    streakDays,
+    currentStreak,
     totalStudyMinutesToday,
     progressPercentage,
-    totalTasksCompleted,
+    totalTasksCompleted
   } = useApp();
 
-  const hours = Math.floor(totalStudyMinutesToday / 60);
-  const mins = totalStudyMinutesToday % 60;
-  const formattedStudyTime = `${hours}h ${mins}m`;
-
-  // Weekly data calculations
-  const totalWeeklyHours = streakDays.reduce((acc, curr) => acc + curr.hoursStudied, 0).toFixed(1);
-  const maxWeeklyHour = Math.max(...streakDays.map(d => d.hoursStudied), 5);
-
-  // Subject distribution
-  const subjectCounts: Record<string, number> = {};
-  tasks.forEach(t => {
-    subjectCounts[t.subject] = (subjectCounts[t.subject] || 0) + 1;
-  });
+  const [activeRange, setActiveRange] = useState<'Daily' | 'Weekly' | 'Monthly'>('Daily');
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 pb-20 max-w-4xl mx-auto animate-fadeIn">
       
       {/* Header */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 text-purple-400" />
-            Study Statistics & Analytics
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Track total focus hours, daily trends, task velocity, and weekly productivity charts.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-semibold text-purple-300 bg-purple-500/10 px-3.5 py-1.5 rounded-xl border border-purple-500/20">
-          <TrendingUp className="w-4 h-4 text-emerald-400" />
-          <span>+14% Productivity vs Last Week</span>
+      <div className="flex items-center justify-between pt-2">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Progress</h1>
+        
+        <div className="p-2.5 rounded-2xl bg-[#141726] border border-[#2A2A40] text-[#9CA3AF]">
+          <Calendar className="w-5 h-5" />
         </div>
       </div>
 
-      {/* 4 Core Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg">
-          <div className="flex items-center gap-3 text-purple-400 mb-2">
-            <Clock className="w-5 h-5" />
-            <span className="text-xs font-semibold text-slate-400">Total Study Time</span>
-          </div>
-          <div className="text-2xl font-black text-white tracking-tight">{formattedStudyTime}</div>
-          <p className="text-[11px] text-slate-400 mt-1">Today's recorded focus</p>
-        </div>
+      {/* Tabs: Daily, Weekly, Monthly */}
+      <div className="p-1.5 rounded-2xl bg-[#141726] border border-[#2A2A40] grid grid-cols-3 gap-1.5 shadow-md">
+        {(['Daily', 'Weekly', 'Monthly'] as const).map(range => {
+          const isSel = activeRange === range;
+          return (
+            <button
+              key={range}
+              onClick={() => setActiveRange(range)}
+              className={`py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all text-center ${
+                isSel
+                  ? 'bg-gradient-to-r from-[#8B5CF6] to-[#A855F7] text-white shadow-md shadow-[#8B5CF6]/30'
+                  : 'text-[#9CA3AF] hover:text-white hover:bg-[#2A2A40]/50'
+              }`}
+            >
+              {range}
+            </button>
+          );
+        })}
+      </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg">
-          <div className="flex items-center gap-3 text-emerald-400 mb-2">
-            <CheckCircle2 className="w-5 h-5" />
-            <span className="text-xs font-semibold text-slate-400">Tasks Completed</span>
-          </div>
-          <div className="text-2xl font-black text-white tracking-tight">{totalTasksCompleted} / {tasks.length}</div>
-          <p className="text-[11px] text-slate-400 mt-1">{Math.round((totalTasksCompleted / Math.max(1, tasks.length)) * 100)}% completion rate</p>
-        </div>
+      {/* Circular Progress Gauge matching mockup */}
+      <div className="p-8 sm:p-10 rounded-[22px] bg-[#141726] border border-[#2A2A40] flex flex-col items-center justify-center text-center space-y-4 shadow-xl relative overflow-hidden">
+        <div className="relative w-52 h-52 flex items-center justify-center">
+          <svg className="w-full h-full transform -rotate-90">
+            <circle
+              cx="104"
+              cy="104"
+              r="86"
+              stroke="#2A2A40"
+              strokeWidth="12"
+              fill="transparent"
+            />
+            <circle
+              cx="104"
+              cy="104"
+              r="86"
+              stroke="url(#progressPurple)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              fill="transparent"
+              strokeDasharray={540}
+              strokeDashoffset={540 - (540 * progressPercentage) / 100}
+              className="transition-all duration-1000 ease-out"
+            />
+            <defs>
+              <linearGradient id="progressPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#8B5CF6" />
+                <stop offset="100%" stopColor="#A855F7" />
+              </linearGradient>
+            </defs>
+          </svg>
 
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg">
-          <div className="flex items-center gap-3 text-amber-400 mb-2">
-            <Award className="w-5 h-5" />
-            <span className="text-xs font-semibold text-slate-400">Focus Sessions</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-4xl font-black text-white tracking-tight">{progressPercentage}%</span>
+            <span className="text-xs font-semibold text-[#9CA3AF] mt-1">Overall Progress</span>
           </div>
-          <div className="text-2xl font-black text-white tracking-tight">{sessions.length}</div>
-          <p className="text-[11px] text-slate-400 mt-1">Pomodoro intervals</p>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg">
-          <div className="flex items-center gap-3 text-blue-400 mb-2">
-            <Flame className="w-5 h-5" />
-            <span className="text-xs font-semibold text-slate-400">Weekly Goal Progress</span>
-          </div>
-          <div className="text-2xl font-black text-white tracking-tight">{progressPercentage}%</div>
-          <p className="text-[11px] text-slate-400 mt-1">On track for target</p>
         </div>
       </div>
 
-      {/* Main Weekly Study Chart */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
+      {/* 4 Stat Cards matching mockup */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        
+        {/* Study Time */}
+        <div className="p-5 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-semibold">
+            <BookOpen className="w-4 h-4 text-[#8B5CF6]" />
+            <span>Study Time</span>
+          </div>
           <div>
-            <h2 className="font-bold text-base text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-purple-400" />
-              Weekly Study Hours Chart
-            </h2>
-            <p className="text-xs text-slate-400">Hours spent studying each day from Monday to Sunday</p>
+            <div className="text-2xl font-extrabold text-white tracking-tight">{totalStudyMinutesToday}m</div>
+            <p className="text-[11px] text-[#9CA3AF] mt-0.5">Total</p>
           </div>
-          <span className="text-xs font-semibold text-slate-300 bg-slate-800 px-3 py-1 rounded-lg border border-slate-700">
-            Total: {totalWeeklyHours} Hours This Week
-          </span>
         </div>
 
-        {/* Bar Chart Representation */}
-        <div className="h-56 pt-8 pb-4 flex items-end justify-between gap-3 border-b border-slate-800">
-          {streakDays.map((d, idx) => {
-            const heightPercent = Math.max(8, Math.round((d.hoursStudied / maxWeeklyHour) * 100));
-            return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 group relative">
-                
-                {/* Hover Tooltip */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 px-2 py-1 rounded bg-slate-800 text-purple-300 text-[10px] font-bold border border-slate-700 shadow pointer-events-none whitespace-nowrap">
-                  {d.hoursStudied} Hours
-                </div>
-
-                {/* Bar */}
-                <div className="w-full max-w-[36px] bg-slate-800 rounded-xl overflow-hidden flex flex-col justify-end h-40">
-                  <div
-                    style={{ height: `${heightPercent}%` }}
-                    className={`w-full transition-all duration-700 rounded-t-xl ${
-                      d.completed
-                        ? 'bg-gradient-to-t from-purple-600 to-indigo-500 shadow-lg shadow-purple-500/20'
-                        : 'bg-slate-700'
-                    }`}
-                  />
-                </div>
-
-                {/* Day Label */}
-                <span className="text-xs font-bold text-slate-400 uppercase">{d.day}</span>
-              </div>
-            );
-          })}
+        {/* Sessions */}
+        <div className="p-5 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-semibold">
+            <Target className="w-4 h-4 text-[#A855F7]" />
+            <span>Sessions</span>
+          </div>
+          <div>
+            <div className="text-2xl font-extrabold text-white tracking-tight">{sessions.length}</div>
+            <p className="text-[11px] text-[#9CA3AF] mt-0.5">Total</p>
+          </div>
         </div>
+
+        {/* Tasks Completed */}
+        <div className="p-5 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-semibold">
+            <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />
+            <span>Tasks Completed</span>
+          </div>
+          <div>
+            <div className="text-2xl font-extrabold text-white tracking-tight">{totalTasksCompleted}</div>
+            <p className="text-[11px] text-[#9CA3AF] mt-0.5">Total</p>
+          </div>
+        </div>
+
+        {/* Current Streak */}
+        <div className="p-5 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-2">
+          <div className="flex items-center gap-2 text-[#9CA3AF] text-xs font-semibold">
+            <Flame className="w-4 h-4 text-[#F59E0B]" />
+            <span>Current Streak</span>
+          </div>
+          <div>
+            <div className="text-2xl font-extrabold text-white tracking-tight">{currentStreak}</div>
+            <p className="text-[11px] text-[#9CA3AF] mt-0.5">Days</p>
+          </div>
+        </div>
+
       </div>
 
-      {/* Subject Distribution */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 shadow-xl space-y-4">
-        <h2 className="font-bold text-base text-white flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-purple-400" />
-          Subject Task Distribution
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Object.entries(subjectCounts).map(([sub, count]) => {
-            const pct = Math.round((count / tasks.length) * 100);
-            return (
-              <div key={sub} className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 space-y-2">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-white">{sub}</span>
-                  <span className="text-purple-300">{count} Tasks ({pct}%)</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    style={{ width: `${pct}%` }}
-                    className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
-                  />
-                </div>
-              </div>
-            );
-          })}
+      {/* Keep Going Banner / Achievements Card matching mockup */}
+      <div className="p-5 sm:p-6 rounded-[22px] bg-[#141726] border border-[#2A2A40] flex items-start gap-4 shadow-lg">
+        <div className="p-3 rounded-2xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] shrink-0">
+          <Trophy className="w-6 h-6" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-extrabold text-white">Keep going!</h3>
+          <p className="text-xs text-[#9CA3AF] leading-relaxed">
+            {totalStudyMinutesToday > 0 || tasks.length > 0
+              ? 'Great start! Continue completing tasks and focus sessions to unlock milestone badges.'
+              : 'Your progress will appear here as you start studying.'}
+          </p>
         </div>
       </div>
 

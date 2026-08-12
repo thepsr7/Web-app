@@ -1,17 +1,27 @@
-import { Task, ScheduleItem, DailyGoal, UserProfile, StreakDay, PomodoroSession } from '../types';
+import { Task, ScheduleItem, DailyGoal, UserProfile, StreakDay, PomodoroSession, UserPreferences } from '../types';
 
 const STORAGE_KEYS = {
-  TASKS: 'study_os_tasks',
-  SESSIONS: 'study_os_sessions',
-  SCHEDULE: 'study_os_schedule',
-  GOAL: 'study_os_goal',
-  USER: 'study_os_user',
-  USERS_LIST: 'study_os_users_list',
-  STREAK: 'study_os_streak',
-  THEME: 'study_os_theme',
+  TASKS: 'study_os_zero_tasks',
+  SESSIONS: 'study_os_zero_sessions',
+  SCHEDULE: 'study_os_zero_schedule',
+  GOAL: 'study_os_zero_goal',
+  USER: 'study_os_zero_user',
+  USERS_LIST: 'study_os_zero_users_list',
+  STREAK: 'study_os_zero_streak',
+  THEME: 'study_os_zero_theme',
+  PREFERENCES: 'study_os_zero_preferences',
 };
 
-export const INITIAL_USERS: UserProfile[] = [];
+export const INITIAL_USER: UserProfile = {
+  id: 'usr_psr',
+  name: 'PSR',
+  email: 'psr@student.edu',
+  isLoggedIn: true,
+  isGuest: false,
+  major: 'Computer Science & Engineering',
+};
+
+export const INITIAL_USERS: UserProfile[] = [INITIAL_USER];
 
 export const INITIAL_TASKS: Task[] = [];
 
@@ -21,14 +31,6 @@ export const INITIAL_GOAL: DailyGoal = {
   targetHours: 3.0,
   targetTasks: 5,
   targetSessions: 4,
-};
-
-export const INITIAL_USER: UserProfile = {
-  id: '',
-  name: 'Student User',
-  email: '',
-  isLoggedIn: false,
-  isGuest: false,
 };
 
 export const INITIAL_STREAK: StreakDay[] = [
@@ -42,6 +44,28 @@ export const INITIAL_STREAK: StreakDay[] = [
 ];
 
 export const INITIAL_SESSIONS: PomodoroSession[] = [];
+
+export const INITIAL_PREFERENCES: UserPreferences = {
+  focus: {
+    defaultFocusDuration: 25,
+    shortBreakDuration: 5,
+    longBreakDuration: 15,
+    sessionsBeforeLongBreak: 4,
+    autoStartNextSession: true,
+  },
+  notifications: {
+    focusReminders: true,
+    breakAlerts: true,
+    dailyGoalReminder: true,
+    motivationalQuotes: true,
+  },
+  theme: 'dark',
+  soundHaptics: {
+    sessionStartSound: true,
+    sessionEndSound: true,
+    hapticFeedback: true,
+  },
+};
 
 // Helper functions for reading & saving to localStorage
 export function loadFromStorage<T>(key: string, fallback: T): T {
