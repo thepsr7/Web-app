@@ -3,9 +3,7 @@ import { useApp } from '../../context/AppContext';
 import {
   Clock,
   Bell,
-  Sun,
   Moon,
-  Monitor,
   Volume2,
   VolumeX,
   Vibrate,
@@ -511,86 +509,32 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* THEME - Matching Screenshot */}
+      {/* THEME */}
       <div className="space-y-2.5">
         <h3 className="text-xs font-extrabold text-[#9CA3AF] uppercase tracking-wider px-1">
           THEME
         </h3>
 
         <div className="p-2 sm:p-3 rounded-[22px] bg-[#141726] border border-[#2A2A40] space-y-1 shadow-md">
-          
-          {/* Light Theme Option */}
-          <div
-            onClick={() => {
-              updatePreferences(prev => ({ ...prev, theme: 'light' }));
-            }}
-            className={`p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
-              preferences.theme === 'light' ? 'bg-[#8B5CF6]/15 border border-[#8B5CF6]/40' : 'hover:bg-[#2A2A40]/30'
-            }`}
-          >
-            <div className="flex items-center gap-3.5 text-xs font-extrabold text-white">
-              <Sun className={`w-5 h-5 ${preferences.theme === 'light' ? 'text-amber-400' : 'text-[#9CA3AF]'}`} />
-              <div>
-                <div>Light Theme</div>
-                <div className="text-[10px] text-[#9CA3AF] font-normal">Clean high-contrast light layout</div>
-              </div>
-            </div>
-            
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-              preferences.theme === 'light' ? 'border-[#8B5CF6] bg-[#8B5CF6]' : 'border-[#2A2A40]'
-            }`}>
-              {preferences.theme === 'light' && <Check className="w-3.5 h-3.5 text-white" />}
-            </div>
-          </div>
-
           {/* Dark Theme Option */}
           <div
             onClick={() => {
               updatePreferences(prev => ({ ...prev, theme: 'dark' }));
             }}
-            className={`p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
-              preferences.theme === 'dark' ? 'bg-[#8B5CF6]/15 border border-[#8B5CF6]/40' : 'hover:bg-[#2A2A40]/30'
-            }`}
+            className="p-3.5 rounded-2xl flex items-center justify-between bg-[#8B5CF6]/15 border border-[#8B5CF6]/40 cursor-pointer transition-all"
           >
             <div className="flex items-center gap-3.5 text-xs font-extrabold text-white">
-              <Moon className={`w-5 h-5 ${preferences.theme === 'dark' ? 'text-[#8B5CF6]' : 'text-[#9CA3AF]'}`} />
+              <Moon className="w-5 h-5 text-[#8B5CF6]" />
               <div>
-                <div>Dark Theme</div>
-                <div className="text-[10px] text-[#9CA3AF] font-normal">Deep dark focus environment</div>
+                <div>Dark Theme (Default)</div>
+                <div className="text-[10px] text-[#9CA3AF] font-normal">Deep dark focus environment for optimal eye comfort</div>
               </div>
             </div>
             
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-              preferences.theme === 'dark' ? 'border-[#8B5CF6] bg-[#8B5CF6]' : 'border-[#2A2A40]'
-            }`}>
-              {preferences.theme === 'dark' && <Check className="w-3.5 h-3.5 text-white" />}
+            <div className="w-5 h-5 rounded-full border-2 border-[#8B5CF6] bg-[#8B5CF6] flex items-center justify-center transition-all">
+              <Check className="w-3.5 h-3.5 text-white" />
             </div>
           </div>
-
-          {/* System Default Option */}
-          <div
-            onClick={() => {
-              updatePreferences(prev => ({ ...prev, theme: 'system' }));
-            }}
-            className={`p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
-              preferences.theme === 'system' ? 'bg-[#8B5CF6]/15 border border-[#8B5CF6]/40' : 'hover:bg-[#2A2A40]/30'
-            }`}
-          >
-            <div className="flex items-center gap-3.5 text-xs font-extrabold text-white">
-              <Monitor className={`w-5 h-5 ${preferences.theme === 'system' ? 'text-cyan-400' : 'text-[#9CA3AF]'}`} />
-              <div>
-                <div>System Default</div>
-                <div className="text-[10px] text-[#9CA3AF] font-normal">Sync automatically with OS settings ({isDarkMode ? 'Dark' : 'Light'})</div>
-              </div>
-            </div>
-            
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-              preferences.theme === 'system' ? 'border-[#8B5CF6] bg-[#8B5CF6]' : 'border-[#2A2A40]'
-            }`}>
-              {preferences.theme === 'system' && <Check className="w-3.5 h-3.5 text-white" />}
-            </div>
-          </div>
-
         </div>
       </div>
 

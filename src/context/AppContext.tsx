@@ -132,8 +132,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, []);
 
-  // Theme resolution: 'dark' | 'light' | 'system'
-  const isDarkMode = preferences.theme === 'dark' || (preferences.theme === 'system' && systemPrefersDark);
+  // Theme is strictly Dark Mode
+  const isDarkMode = true;
 
   // Data States
   const [tasks, setTasks] = useState<Task[]>(() => loadFromStorage(STORAGE_KEYS.TASKS, INITIAL_TASKS));
@@ -210,14 +210,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Handle dark mode class on document element
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+  }, []);
 
   // Helper function to update preferences
   const updatePreferences = (updater: Partial<UserPreferences> | ((prev: UserPreferences) => UserPreferences)) => {
@@ -307,13 +302,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Actions
   const toggleTheme = () => {
-    updatePreferences(prev => {
-      let nextTheme: ThemeOption = 'dark';
-      if (prev.theme === 'dark') nextTheme = 'light';
-      else if (prev.theme === 'light') nextTheme = 'system';
-      else nextTheme = 'dark';
-      return { ...prev, theme: nextTheme };
-    });
+    updatePreferences(prev => ({ ...prev, theme: 'dark' }));
   };
 
   const setTimerMode = (mode: TimerMode) => {

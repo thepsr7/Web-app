@@ -76,7 +76,7 @@ export interface NotificationPreferences {
   motivationalQuotes: boolean;
 }
 
-export type ThemeOption = 'light' | 'dark' | 'system';
+export type ThemeOption = 'dark';
 
 export interface SoundHapticsPreferences {
   sessionStartSound: boolean;

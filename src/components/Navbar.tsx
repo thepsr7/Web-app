@@ -1,9 +1,9 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { GraduationCap, Moon, Sun, Monitor, Layout, Play, User, LogOut, Code, Sparkles } from 'lucide-react';
+import { GraduationCap, Moon, Layout, Play, User, LogOut, Code, Sparkles } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
-  const { mainView, setMainView, preferences, toggleTheme, user, logout, openAuthModal } = useApp();
+  const { mainView, setMainView, user, logout, openAuthModal } = useApp();
 
   const handleNavigateToApp = () => {
     if (!user.isLoggedIn) {
@@ -75,19 +75,16 @@ export const Navbar: React.FC = () => {
             <span>PSR (Prem Singh Rajput)</span>
           </div>
 
-          {/* Theme Toggle Button (Dark / Light / System) */}
-          <button
-            onClick={toggleTheme}
-            title={`Current Theme: ${preferences?.theme ? preferences.theme.toUpperCase() : 'DARK'} (Click to cycle)`}
-            className="p-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer"
+          {/* Theme Indicator */}
+          <div
+            title="Dark Theme Active"
+            className="p-2 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center gap-1.5 select-none"
           >
-            {preferences?.theme === 'light' && <Sun className="w-4 h-4 text-amber-400" />}
-            {preferences?.theme === 'dark' && <Moon className="w-4 h-4 text-purple-400" />}
-            {preferences?.theme === 'system' && <Monitor className="w-4 h-4 text-cyan-400" />}
+            <Moon className="w-4 h-4 text-purple-400" />
             <span className="text-[10px] font-bold tracking-wider uppercase text-slate-300 hidden sm:inline">
-              {preferences?.theme || 'dark'}
+              Dark
             </span>
-          </button>
+          </div>
 
           {/* Auth State Buttons */}
           {user?.isLoggedIn ? (

@@ -228,8 +228,8 @@ export const ShowcaseView: React.FC = () => {
                   <Moon className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white">Dark / Light Mode</h3>
-                  <p className="text-slate-400 text-[11px] mt-0.5">Switch between dark and light mode anytime.</p>
+                  <h3 className="font-bold text-white">Focus Dark Theme</h3>
+                  <p className="text-slate-400 text-[11px] mt-0.5">High-contrast dark mode optimized for long study sessions.</p>
                 </div>
               </div>
 
