@@ -58,7 +58,30 @@ export interface StreakDay {
 export type TimerMode = 'Focus' | 'Short Break' | 'Long Break';
 
 export type MainViewMode = 'showcase' | 'app';
-export type AppTabMode = 'dashboard' | 'tasks' | 'focus' | 'stats' | 'goals' | 'schedule' | 'settings';
+export type AppTabMode = 'dashboard' | 'tasks' | 'focus' | 'notes' | 'stats' | 'goals' | 'schedule' | 'settings';
+
+export type NoteType = 'text' | 'pdf' | 'video' | 'youtube' | 'formula';
+
+export interface NoteItem {
+  id: string;
+  title: string;
+  type: NoteType;
+  content?: string; // Text note body, formula markdown/LaTeX, or YouTube description
+  fileBlobId?: string; // Key stored in IndexedDB for file uploads
+  fileName?: string;
+  fileSize?: number; // Size in bytes
+  fileType?: string; // MIME type
+  youtubeUrl?: string;
+  youtubeEmbedId?: string;
+  formulaSubject?: 'Physics' | 'Chemistry' | 'Mathematics' | 'General';
+  formulaLaTeX?: string;
+  isFavorite: boolean;
+  inTrash: boolean;
+  createdAt: string;
+  updatedAt: string;
+  category?: string;
+  tags?: string[];
+}
 
 // Preferences Interfaces matching user request screenshot
 export interface FocusPreferences {

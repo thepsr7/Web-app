@@ -1,10 +1,11 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Home, CheckSquare, Clock, BarChart2, Settings, GraduationCap, RotateCcw } from 'lucide-react';
+import { Home, CheckSquare, Clock, BarChart2, BookOpen, Settings, GraduationCap, RotateCcw } from 'lucide-react';
 import { DashboardView } from './DashboardView';
 import { TaskManagementView } from './TaskManagementView';
 import { PomodoroView } from './PomodoroView';
 import { StatisticsView } from './StatisticsView';
+import { NotesView } from './NotesView';
 import { SettingsView } from './SettingsView';
 import { AddTaskModal } from './AddTaskModal';
 import { MascotWidget } from '../mascot/MascotWidget';
@@ -18,6 +19,7 @@ export const AppLayout: React.FC = () => {
     { id: 'tasks', label: 'Tasks', icon: <CheckSquare className="w-5 h-5" /> },
     { id: 'focus', label: 'Focus', icon: <Clock className="w-5 h-5" /> },
     { id: 'stats', label: 'Progress', icon: <BarChart2 className="w-5 h-5" /> },
+    { id: 'notes', label: 'Notes', icon: <BookOpen className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
 
@@ -94,6 +96,7 @@ export const AppLayout: React.FC = () => {
         {activeTab === 'tasks' && <TaskManagementView />}
         {activeTab === 'focus' && <PomodoroView />}
         {activeTab === 'stats' && <StatisticsView />}
+        {activeTab === 'notes' && <NotesView />}
         {(activeTab === 'settings' || activeTab === 'goals') && <SettingsView />}
       </main>
 
